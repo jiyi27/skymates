@@ -1,13 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Comment, User } from '@/app/discuss/_data/mockData';  // 引入之前定义的类型
-import CommentCard from './CommentCard';  // 引入之前创建的评论卡片组件
+import React, { useState, useMemo } from 'react';
+import { Comment, User } from '@/app/discuss/_data/mockData';
+import CommentCard from './CommentCard';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
-// 组件props类型定义
+// 定义排序类型
+type SortType = 'hot' | 'latest';
+
 type CommentSectionProps = {
     comments: Comment[];
     currentUser: User;
@@ -15,20 +24,50 @@ type CommentSectionProps = {
 }
 
 const CommentSection = ({ comments, currentUser, postId }: CommentSectionProps) => {
-    // 状态管理
-    const [commentText, setCommentText] = useState('');  // 评论输入内容
-    const [replyToId, setReplyToId] = useState<string | null>(null);  // 要回复的评论ID
-    const [replyToComment, setReplyToComment] = useState<Comment | null>(null);  // 要回复的评论详情
-    const [localComments, setLocalComments] = useState<Comment[]>(comments);  // 本地评论状态
+    // 之前的状态
+    const [commentText, setCommentText] = useState('');
+    const [replyToId, setReplyToId] = useState<string | null>(null);
+    const [replyToComment, setReplyToComment] = useState<Comment | null>(null);
+    const [localComments, setLocalComments] = useState<Comment[]>(comments);
 
-    // 处理评论提交
+    // 新增排序状态，默认为热门
+    const [sortType, setSortType] = useState<SortType>('hot');
+
+    // 使用 useMemo 计算排序后的评论列表，避免不必要的重新计算
+    const sortedComments = useMemo(() => {
+        const commentsCopy = [...localComments];
+
+        switch (sortType) {
+            case 'hot':
+                // 按点赞数降序排序，点赞数相同时按时间降序
+                return commentsCopy.sort((a, b) => {
+                    if (b.likesCount !== a.likesCount) {
+                        return b.likesCount - a.likesCount;
+                    }
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                });
+            case 'latest':
+                // 按创建时间降序排序
+                return commentsCopy.sort((a, b) =>
+                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                );
+            default:
+                return commentsCopy;
+        }
+    }, [localComments, sortType]);
+
+    // 处理排序变化
+    const handleSortChange = (value: SortType) => {
+        setSortType(value);
+    };
+
+    // 提交新评论时，需要考虑当前的排序方式
     const handleSubmitComment = async () => {
         if (!commentText.trim()) return;
 
         try {
-            // 构建新评论数据
             const newComment: Comment = {
-                id: `temp-${Date.now()}`,  // 临时ID，实际应由后端生成
+                id: `temp-${Date.now()}`,
                 postId,
                 userId: currentUser.id,
                 content: commentText,
@@ -46,7 +85,7 @@ const CommentSection = ({ comments, currentUser, postId }: CommentSectionProps) 
                 updatedAt: new Date().toISOString(),
             };
 
-            // TODO: 发送API请求保存评论
+            // TODO: API 调用
             // const response = await fetch('/api/comments', {
             //   method: 'POST',
             //   body: JSON.stringify(newComment),
@@ -55,16 +94,20 @@ const CommentSection = ({ comments, currentUser, postId }: CommentSectionProps) 
 
             // 更新本地状态
             setLocalComments(prev => [newComment, ...prev]);
-
-            // 清空输入框和回复状态
             setCommentText('');
             setReplyToId(null);
             setReplyToComment(null);
+
+            // 如果当前是按热门排序，可能需要调整新评论的位置
+            if (sortType === 'hot') {
+                setSortType('latest');
+                // 可以选择显示一个提示："已切换到最新排序以显示您的评论"
+            }
         } catch (error) {
             console.error('Failed to submit comment:', error);
-            // TODO: 显示错误提示
         }
     };
+
 
     // 处理回复按钮点击
     const handleReply = (commentId: string) => {
@@ -75,12 +118,6 @@ const CommentSection = ({ comments, currentUser, postId }: CommentSectionProps) 
             // 让输入框获得焦点
             document.querySelector('textarea')?.focus();
         }
-    };
-
-    // 处理取消回复
-    const handleCancelReply = () => {
-        setReplyToId(null);
-        setReplyToComment(null);
     };
 
     // 处理点赞功能
@@ -133,7 +170,6 @@ const CommentSection = ({ comments, currentUser, postId }: CommentSectionProps) 
                     <AvatarFallback>{currentUser.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                    {/* 回复提示 */}
                     {replyToComment && (
                         <div className="mb-2 p-2 bg-gray-50 rounded-md text-sm text-gray-600 flex justify-between items-center">
               <span>
@@ -142,7 +178,10 @@ const CommentSection = ({ comments, currentUser, postId }: CommentSectionProps) 
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={handleCancelReply}
+                                onClick={() => {
+                                    setReplyToId(null);
+                                    setReplyToComment(null);
+                                }}
                                 className="text-gray-500 hover:text-gray-700"
                             >
                                 取消回复
@@ -150,7 +189,6 @@ const CommentSection = ({ comments, currentUser, postId }: CommentSectionProps) 
                         </div>
                     )}
 
-                    {/* 评论输入框 */}
                     <Textarea
                         value={commentText}
                         onChange={(e) => setCommentText(e.target.value)}
@@ -168,9 +206,28 @@ const CommentSection = ({ comments, currentUser, postId }: CommentSectionProps) 
                 </div>
             </div>
 
+            {/* 排序选择器和评论计数 */}
+            <div className="flex justify-between items-center py-4">
+        <span className="text-sm text-gray-600">
+          共 {localComments.length} 条评论
+        </span>
+                <Select
+                    value={sortType}
+                    onValueChange={handleSortChange}
+                >
+                    <SelectTrigger className="w-32">
+                        <SelectValue placeholder="选择排序方式" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="hot">热门排序</SelectItem>
+                        <SelectItem value="latest">最新排序</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
             {/* 评论列表 */}
             <div className="space-y-4">
-                {localComments.map((comment) => (
+                {sortedComments.map((comment) => (
                     <CommentCard
                         key={comment.id}
                         comment={comment}

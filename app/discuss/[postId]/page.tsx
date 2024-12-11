@@ -9,7 +9,9 @@ interface PostPageProps {
     };
 }
 
-export default function PostPage({ params }: PostPageProps) {
+// Next.js 路由参数的处理为异步，要等待 Next.js 路由系统解析完 URL 参数后，才能确保 params 对象包含正确的值
+// 所以声明为异步函数，等待解析 Next.js 已经帮我们做了
+export default async function PostPage({ params }: PostPageProps) {
     const post = posts.find((p) => p.id === params.postId);
 
     if (!post) {
