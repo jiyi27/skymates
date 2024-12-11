@@ -80,7 +80,7 @@ export const PostList = ({ initialPosts, users }: PostListProps) => {
         <div>
             <PostForm onSubmit={handleNewPost} />
             <SortControl currentSort={sortOption} onSortChange={handleSort} />
-            <div className="space-y-4 border-2">
+            <div className="space-y-4 pb-20">
                 {posts.map(post => (
                     <PostCard
                         key={post.id}
