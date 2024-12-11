@@ -5,6 +5,7 @@ import { UserCircle, Heart, MessageCircle, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import type { Post, User } from '../_data/mockData';
+import Link from "next/link";
 
 interface PostCardProps {
     post: Post;
@@ -19,7 +20,8 @@ export const PostCard = ({ post, author, onLike }: PostCardProps) => {
     });
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-4 transition-shadow hover:shadow-lg">
+        <Link href={`/discuss/${post.id}`}>
+            <div className="bg-white rounded-lg shadow-md p-6 mb-4 transition-shadow hover:shadow-lg">
             <div className="flex items-center mb-3">
                 <div className="flex items-center flex-1">
                     {author.avatar ? (
@@ -63,5 +65,6 @@ export const PostCard = ({ post, author, onLike }: PostCardProps) => {
                 </div>
             </div>
         </div>
+        </Link>
     );
 };

@@ -1,128 +1,199 @@
 // app/discuss/_data/types.ts
-export interface User {
+export type User = {
     id: string;
+    username: string;
     name: string;
-    avatar: string;
-}
-
-export interface Post {
-    id: string;
-    title: string;
-    content: string;
-    authorId: string;
+    avatarUrl: string | null;
+    email: string;
     createdAt: string;
-    likesCount: number;
-    commentsCount: number;
-    isLiked?: boolean;
 }
 
-export interface Comment {
+export type Comment = {
     id: string;
     postId: string;
-    authorId: string;
+    userId: string;
     content: string;
-    createdAt: string;
     likesCount: number;
-    parentId?: string;
-    isLiked?: boolean;
+    replyToId: string | null;
+    replyTo: {
+        id: string;
+        content: string;
+        userId: string;
+        username: string;
+    } | null;
+    user: User;
+    isLiked: boolean;
+    createdAt: string;
+    updatedAt: string;
 }
 
-// app/discuss/_data/users.ts
-export const users: User[] = [
+export type Post = {
+    id: string;
+    authorId: string;
+    title: string;
+    content: string;
+    likesCount: number;
+    commentsCount: number;
+    user: User;
+    isLiked: boolean;
+    comments: Comment[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+const users: User[] = [
     {
-        id: "u1",
-        name: "张三",
-        avatar: "/avatars/user1.jpg",
+        id: '1',
+        username: 'TechGuru',
+        name: '张三',
+        email: 'tech.guru@example.com',
+        avatarUrl: '/avatars/1.png',
+        createdAt: '2024-01-01T00:00:00Z',
     },
     {
-        id: "u2",
-        name: "李四",
-        avatar: "/avatars/user2.jpg",
+        id: '2',
+        username: 'CodeMaster',
+        name: '赵四',
+        email: 'code.master@example.com',
+        avatarUrl: '/avatars/2.png',
+        createdAt: '2024-01-01T00:00:00Z',
     },
     {
-        id: "u3",
-        name: "王五",
-        avatar: "/avatars/user3.jpg",
+        id: '3',
+        username: 'DesignPro',
+        name: '王五',
+        email: 'design.pro@example.com',
+        avatarUrl: '/avatars/3.png',
+        createdAt: '2024-01-01T00:00:00Z',
     },
     {
-        id: "u4",
-        name: "赵六",
-        avatar: "/avatars/user4.jpg",
+        id: '4',
+        username: 'DataNinja',
+        name: '李六',
+        email: 'data.ninja@example.com',
+        avatarUrl: '/avatars/4.png',
+        createdAt: '2024-01-01T00:00:00Z',
     },
 ];
 
-// app/discuss/_data/posts.ts
-export const posts: Post[] = [
+const comments: Comment[] = [
     {
-        id: "p1",
-        title: "请问有人学习过机器学习吗？想请教一些问题",
-        content: "最近在学习机器学习基础，遇到了一些困难。特别是在理解神经网络的反向传播算法时，感觉特别吃力。有经验的同学能分享一下学习方法吗？",
-        authorId: "u1",
-        createdAt: "2024-12-09T15:30:00Z",
-        likesCount: 42,
-        commentsCount: 15,
-        isLiked: false,
-    },
-    {
-        id: "p2",
-        title: "分享一个学习编程的小技巧",
-        content: "在学习新的编程概念时，我发现用思维导图来整理知识点特别有用。这里分享一下我整理的 JavaScript 异步编程的思维导图...",
-        authorId: "u2",
-        createdAt: "2024-12-10T09:15:00Z",
-        likesCount: 89,
-        commentsCount: 23,
+        id: '1',
+        postId: '1',
+        userId: '2',
+        content: '这个观点非常好，特别是关于性能优化的部分！',
+        likesCount: 3,
+        replyToId: null,
+        replyTo: null,
+        user: users[1],
         isLiked: true,
+        createdAt: '2024-01-01T01:00:00Z',
+        updatedAt: '2024-01-01T01:00:00Z',
     },
     {
-        id: "p3",
-        title: "推荐一个超棒的算法可视化网站",
-        content: "今天发现了一个很棒的算法可视化网站，对理解排序算法特别有帮助。网站通过动画的方式展示了各种排序算法的执行过程...",
-        authorId: "u3",
-        createdAt: "2023-12-10T11:45:00Z",
-        likesCount: 156,
-        commentsCount: 34,
+        id: '2',
+        postId: '1',
+        userId: '3',
+        content: '完全同意你的看法，我在项目中也遇到类似的问题。',
+        likesCount: 2,
+        replyToId: '1',
+        replyTo: {
+            id: '1',
+            content: '这个观点非常好，特别是关于性能优化的部分！',
+            userId: '2',
+            username: 'CodeMaster',
+        },
+        user: users[2],
         isLiked: false,
+        createdAt: '2024-01-01T02:00:00Z',
+        updatedAt: '2024-01-01T02:00:00Z',
     },
     {
-        id: "p4",
-        title: "React Hooks 使用心得",
-        content: "使用 React Hooks 已经有两年了，想分享一下我在实际项目中积累的一些经验和踩过的坑...",
-        authorId: "u4",
-        createdAt: "2024-12-10T13:20:00Z",
-        likesCount: 267,
-        commentsCount: 45,
+        id: '3',
+        postId: '1',
+        userId: '1',
+        content: '感谢支持！我后续会分享更多相关内容。',
+        likesCount: 1,
+        replyToId: '2',
+        replyTo: {
+            id: '2',
+            content: '完全同意你的看法，我在项目中也遇到类似的问题。',
+            userId: '3',
+            username: 'DesignPro',
+        },
+        user: users[0],
         isLiked: false,
+        createdAt: '2024-01-01T03:00:00Z',
+        updatedAt: '2024-01-01T03:00:00Z',
     },
 ];
 
-// app/discuss/_data/comments.ts
-export const comments: Comment[] = [
+const posts: Post[] = [
     {
-        id: "c1",
-        postId: "p1",
-        authorId: "u2",
-        content: "建议先从感知机开始学习，理解基本原理后再深入神经网络",
-        createdAt: "2024-12-09T16:00:00Z",
+        id: '1',
+        authorId: '1',
+        title: 'React性能优化最佳实践',
+        content: '在开发大型React应用时，性能优化是一个非常重要的话题。本文将分享一些实用的优化技巧...',
+        likesCount: 15,
+        commentsCount: 3,
+        user: users[0],
+        isLiked: true,
+        comments: comments,
+        createdAt: '2024-01-01T00:00:00Z',
+        updatedAt: '2024-01-01T00:00:00Z',
+    },
+    {
+        id: '2',
+        authorId: '2',
+        title: 'TypeScript高级特性详解',
+        content: 'TypeScript提供了许多强大的类型系统特性，今天我们来深入了解一下...',
+        likesCount: 8,
+        commentsCount: 0,
+        user: users[1],
+        isLiked: false,
+        comments: [],
+        createdAt: '2024-01-02T00:00:00Z',
+        updatedAt: '2024-01-02T00:00:00Z',
+    },
+    {
+        id: '3',
+        authorId: '3',
+        title: 'CSS Grid布局完全指南',
+        content: 'CSS Grid是一个强大的布局工具，本文将详细介绍其使用方法和实践技巧...',
         likesCount: 12,
-        isLiked: false,
-    },
-    {
-        id: "c2",
-        postId: "p1",
-        authorId: "u3",
-        content: "推荐你看看 3Blue1Brown 的神经网络视频系列，讲解非常直观",
-        createdAt: "2024-12-09T16:15:00Z",
-        likesCount: 18,
+        commentsCount: 0,
+        user: users[2],
         isLiked: true,
+        comments: [],
+        createdAt: '2024-01-03T00:00:00Z',
+        updatedAt: '2024-01-03T00:00:00Z',
     },
     {
-        id: "c3",
-        postId: "p1",
-        parentId: "c2",
-        authorId: "u1",
-        content: "谢谢推荐！我这就去看看",
-        createdAt: "2024-12-09T16:30:00Z",
-        likesCount: 5,
+        id: '4',
+        authorId: '4',
+        title: '前端测试策略',
+        content: '一个完善的测试策略对于保证代码质量至关重要，让我们来看看前端测试的几种方法...',
+        likesCount: 6,
+        commentsCount: 0,
+        user: users[3],
         isLiked: false,
+        comments: [],
+        createdAt: '2024-01-04T00:00:00Z',
+        updatedAt: '2024-01-04T00:00:00Z',
+    },
+    {
+        id: '5',
+        authorId: '1',
+        title: 'Next.js 13新特性解析',
+        content: 'Next.js 13带来了许多令人兴奋的新特性，让我们一起来看看这些变化...',
+        likesCount: 10,
+        commentsCount: 0,
+        user: users[0],
+        isLiked: true,
+        comments: [],
+        createdAt: '2024-01-05T00:00:00Z',
+        updatedAt: '2024-01-05T00:00:00Z',
     },
 ];
+
+export { users, comments, posts };
