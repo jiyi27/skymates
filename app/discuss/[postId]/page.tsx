@@ -1,7 +1,7 @@
 // app/discuss/[postId]/page.tsx
 import { notFound } from 'next/navigation';
 import { posts, users, comments } from '../_data/mockData';
-import CommentsList from "@/app/discuss/_components/CommentList";
+import CommentSection from "@/app/discuss/_components/CommentSection";
 
 interface PostPageProps {
     params: {
@@ -17,10 +17,18 @@ export default function PostPage({ params }: PostPageProps) {
     }
 
     const author = users.find((u) => u.id === post.authorId);
-    const postComments = comments.filter((c) => c.postId === post.id);
 
-    // 假设当前用户ID，实际应该从认证系统获取
-    const currentUserId = "current-user-id";
+    // 假设当前用户，实际应该从认证系统获取
+    const currentUser = {
+        id: '1',
+        username: 'TechGuru',
+        name: '张三',
+        email: 'tech.guru@example.com',
+        avatar: '/avatars/1.png',
+        createdAt: '2024-01-01T00:00:00Z',
+    };
+
+    const currentComments = comments.filter((c) => c.postId === post.id);
 
     return (
         <div className="max-w-4xl mx-auto p-4">
@@ -40,9 +48,10 @@ export default function PostPage({ params }: PostPageProps) {
             </div>
 
             {/* 评论区 */}
-            <CommentsList
-                comments={postComments}
-                currentUserId={currentUserId}
+            <CommentSection
+                comments={currentComments}
+                currentUser={currentUser}
+                postId="1"
             />
         </div>
     );

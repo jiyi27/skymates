@@ -41,6 +41,9 @@ export const PostList = ({ initialPosts, users }: PostListProps) => {
             likesCount: 0,
             commentsCount: 0,
             isLiked: false,
+            comments: [],
+            user: users[0],
+            updatedAt: new Date().toISOString(),
         };
 
         setPosts(prevPosts => [newPost, ...prevPosts]);
@@ -72,7 +75,10 @@ export const PostList = ({ initialPosts, users }: PostListProps) => {
         return users.find(user => user.id === userId) || {
             id: userId,
             name: '未知用户',
-            avatar: ''
+            avatar: '',
+            email: '',
+            createdAt: '',
+            username: '',
         };
     };
 

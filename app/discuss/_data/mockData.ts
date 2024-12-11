@@ -3,7 +3,7 @@ export type User = {
     id: string;
     username: string;
     name: string;
-    avatarUrl: string | null;
+    avatar: string | null;
     email: string;
     createdAt: string;
 }
@@ -47,7 +47,7 @@ const users: User[] = [
         username: 'TechGuru',
         name: '张三',
         email: 'tech.guru@example.com',
-        avatarUrl: '/avatars/1.png',
+        avatar: '/avatars/1.png',
         createdAt: '2024-01-01T00:00:00Z',
     },
     {
@@ -55,7 +55,7 @@ const users: User[] = [
         username: 'CodeMaster',
         name: '赵四',
         email: 'code.master@example.com',
-        avatarUrl: '/avatars/2.png',
+        avatar: '/avatars/2.png',
         createdAt: '2024-01-01T00:00:00Z',
     },
     {
@@ -63,7 +63,7 @@ const users: User[] = [
         username: 'DesignPro',
         name: '王五',
         email: 'design.pro@example.com',
-        avatarUrl: '/avatars/3.png',
+        avatar: '/avatars/3.png',
         createdAt: '2024-01-01T00:00:00Z',
     },
     {
@@ -71,7 +71,7 @@ const users: User[] = [
         username: 'DataNinja',
         name: '李六',
         email: 'data.ninja@example.com',
-        avatarUrl: '/avatars/4.png',
+        avatar: '/avatars/4.png',
         createdAt: '2024-01-01T00:00:00Z',
     },
 ];

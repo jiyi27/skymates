@@ -61,7 +61,7 @@ const CommentCard = ({
                 <div className="flex justify-between items-start mb-2">
                     <div className="flex items-center gap-2">
                         <Avatar className="h-8 w-8">
-                            <AvatarImage src={comment.user.avatarUrl || ''} alt={comment.user.name} />
+                            <AvatarImage src={comment.user.avatar || ''} alt={comment.user.name} />
                             <AvatarFallback>{getInitials(comment.user.name)}</AvatarFallback>
                         </Avatar>
                         <div>
