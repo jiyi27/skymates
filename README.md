@@ -27,6 +27,11 @@ pnpm install
 
 ```bash
 pnpm dlx shadcn@latest init
+```
+
+When prompted, select the components you want to install.
+
+```bash
 Which style would you like to use? › New York
 Which color would you like to use as base color? › Zinc
 Do you want to use CSS variables for colors? › Yes
