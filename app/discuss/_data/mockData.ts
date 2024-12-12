@@ -147,7 +147,7 @@ const posts: Post[] = [
         authorId: '2',
         title: 'TypeScript高级特性详解',
         content: 'TypeScript提供了许多强大的类型系统特性，今天我们来深入了解一下...',
-        likesCount: 8,
+        likesCount: 16,
         commentsCount: 0,
         user: users[1],
         isLiked: false,

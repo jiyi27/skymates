@@ -1,12 +1,12 @@
 // app/discuss/_components/PostListClient.tsx
 "use client";
 
-import { useState } from 'react';
-import { PostCard } from './PostCard';
-import { PostForm } from './PostForm';
-import { SortControl } from './SortControl';
-import type { SortOption } from './types';
-import type { Post, User } from '../_data/mockData';
+import React from "react";
+import type {SortOption} from "@/app/discuss/_components/types";
+import {PostCard} from "@/app/discuss/_components/PostCard";
+import {PostForm} from "@/app/discuss/_components/PostForm";
+import {SortControl} from "@/app/discuss/_components/SortControl";
+import {Post, User} from "@/app/discuss/_data/mockData";
 
 interface PostListProps {
     initialPosts: Post[];
@@ -14,10 +14,26 @@ interface PostListProps {
 }
 
 export const PostList = ({ initialPosts, users }: PostListProps) => {
-    const [posts, setPosts] = useState(initialPosts);
-    const [sortOption, setSortOption] = useState<SortOption>('latest');
+    const sortFunctions = React.useMemo(() => ({
+        latest: (a: Post, b: Post) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        hot: (a: Post, b: Post) => (b.likesCount * 2 + b.commentsCount) - (a.likesCount * 2 + a.commentsCount),
+        mostLiked: (a: Post, b: Post) => b.likesCount - a.likesCount
+    }), []);
 
-    const handleLike = (postId: string) => {
+    const [posts, setPosts] = React.useState(() => {
+        return [...initialPosts].sort(sortFunctions.hot);
+    });
+    const [sortOption, setSortOption] = React.useState<SortOption>('hot');
+
+    const handleSort = React.useCallback((option: SortOption) => {
+        setSortOption(option);
+        setPosts(prevPosts => {
+            const sortFn = sortFunctions[option] || (() => 0);
+            return [...prevPosts].sort(sortFn);
+        });
+    }, [sortFunctions]);
+
+    const handleLike = React.useCallback((postId: string) => {
         setPosts(prevPosts =>
             prevPosts.map(post =>
                 post.id === postId
@@ -29,61 +45,28 @@ export const PostList = ({ initialPosts, users }: PostListProps) => {
                     : post
             )
         );
-    };
+    }, []);
 
-    const handleNewPost = (title: string, content: string) => {
+    const handleNewPost = React.useCallback((title: string, content: string) => {
         const newPost: Post = {
-            id: `p${Date.now()}`, // 实际应用中应该由后端生成
+            id: `p${Date.now()}`,
+            authorId: 'u1',
             title,
             content,
-            authorId: 'u1', // 实际应用中应该使用当前登录用户的ID
-            createdAt: new Date().toISOString(),
             likesCount: 0,
             commentsCount: 0,
+            user: users[0],
             isLiked: false,
             comments: [],
-            user: users[0],
+            createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
         };
 
         setPosts(prevPosts => [newPost, ...prevPosts]);
-    };
-
-    const handleSort = (option: SortOption) => {
-        setSortOption(option);
-
-        const sortedPosts = [...posts].sort((a, b) => {
-            switch (option) {
-                case 'latest':
-                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-                case 'hot':
-                    // 这里用一个简单的热度算法：点赞数 * 2 + 评论数
-                    const hotA = a.likesCount * 2 + a.commentsCount;
-                    const hotB = b.likesCount * 2 + b.commentsCount;
-                    return hotB - hotA;
-                case 'mostLiked':
-                    return b.likesCount - a.likesCount;
-                default:
-                    return 0;
-            }
-        });
-
-        setPosts(sortedPosts);
-    };
-
-    const findUser = (userId: string) => {
-        return users.find(user => user.id === userId) || {
-            id: userId,
-            name: '未知用户',
-            avatar: '',
-            email: '',
-            createdAt: '',
-            username: '',
-        };
-    };
+    }, [users]);
 
     return (
-        <div>
+        <div className="max-w-3xl mx-auto">
             <PostForm onSubmit={handleNewPost} />
             <SortControl currentSort={sortOption} onSortChange={handleSort} />
             <div className="space-y-4 pb-20">
@@ -91,7 +74,6 @@ export const PostList = ({ initialPosts, users }: PostListProps) => {
                     <PostCard
                         key={post.id}
                         post={post}
-                        author={findUser(post.authorId)}
                         onLike={handleLike}
                     />
                 ))}

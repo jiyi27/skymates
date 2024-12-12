@@ -1,37 +1,27 @@
 "use client";
 
 import React from 'react';
-import { Clock, Flame, ThumbsUp } from 'lucide-react';
 import type { SortOption } from './types';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 interface SortControlProps {
     currentSort: SortOption;
-    onSortChange: (sort: SortOption) => void;
+    onSortChange: (option: SortOption) => void;
 }
 
 export const SortControl = ({ currentSort, onSortChange }: SortControlProps) => {
-    const sortOptions = [
-        { value: 'latest' as const, label: '最新', icon: Clock },
-        { value: 'hot' as const, label: '热门', icon: Flame },
-        { value: 'mostLiked' as const, label: '最多点赞', icon: ThumbsUp },
-    ];
-
     return (
-        <div className="flex space-x-2 mb-6">
-            {sortOptions.map(({ value, label, icon: Icon }) => (
-                <button
-                    key={value}
-                    onClick={() => onSortChange(value)}
-                    className={`px-4 py-2 rounded-lg flex items-center transition-colors ${
-                        currentSort === value
-                            ? 'bg-blue-500 text-white'
-                            : 'bg-white text-gray-600 hover:bg-gray-100'
-                    }`}
-                >
-                    <Icon className="w-4 h-4 mr-2" />
-                    {label}
-                </button>
-            ))}
+        <div className="mb-6">
+            <Select value={currentSort} onValueChange={onSortChange}>
+                <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="排序方式" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="latest">最新发布</SelectItem>
+                    <SelectItem value="hot">最热门</SelectItem>
+                    <SelectItem value="mostLiked">最多点赞</SelectItem>
+                </SelectContent>
+            </Select>
         </div>
     );
 };
