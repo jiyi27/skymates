@@ -14,7 +14,7 @@ interface PostListProps {
 }
 
 export const PostList = ({ initialPosts, users }: PostListProps) => {
-    const sortFunctions = React.useMemo(() => ({
+    const sortFunctions:  Record<SortOption, (a: Post, b: Post) => number> = React.useMemo(() => ({
         latest: (a: Post, b: Post) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         hot: (a: Post, b: Post) => (b.likesCount * 2 + b.commentsCount) - (a.likesCount * 2 + a.commentsCount),
         mostLiked: (a: Post, b: Post) => b.likesCount - a.likesCount
