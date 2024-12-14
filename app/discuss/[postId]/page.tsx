@@ -1,18 +1,13 @@
-// app/discuss/[postId]/page.tsx
 import { notFound } from 'next/navigation';
 import { posts, users, comments } from '../_data/mockData';
 import CommentSection from "@/app/discuss/_components/CommentSection";
 
-interface PostPageProps {
-    params: {
-        postId: string;
-    };
-}
 
-// Next.js 路由参数的处理为异步，要等待 Next.js 路由系统解析完 URL 参数后，才能确保 params 对象包含正确的值
-// 所以声明为异步函数，等待解析 Next.js 已经帮我们做了
-export default async function PostPage({ params }: PostPageProps) {
-    const post = posts.find((p) => p.id === params.postId);
+// In Next.js version 15 you must await the params, as they are now a promise.
+// `params` should be awaited before using its properties.
+export default async function PostPage({ params }: { params: Promise<{ postId: string }> }) {
+    const { postId } = await params;
+    const post = posts.find((p) => p.id === postId);
 
     if (!post) {
         notFound();
