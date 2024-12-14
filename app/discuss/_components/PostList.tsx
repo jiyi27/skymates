@@ -25,15 +25,15 @@ export const PostList = ({ initialPosts, users }: PostListProps) => {
     });
     const [sortOption, setSortOption] = React.useState<SortOption>('hot');
 
-    const handleSort = React.useCallback((option: SortOption) => {
+    const handleSort = (option: SortOption) => {
         setSortOption(option);
         setPosts(prevPosts => {
             const sortFn = sortFunctions[option] || (() => 0);
             return [...prevPosts].sort(sortFn);
         });
-    }, [sortFunctions]);
+    };
 
-    const handleLike = React.useCallback((postId: string) => {
+    const handleLike = (postId: string) => {
         setPosts(prevPosts =>
             prevPosts.map(post =>
                 post.id === postId
@@ -45,9 +45,9 @@ export const PostList = ({ initialPosts, users }: PostListProps) => {
                     : post
             )
         );
-    }, []);
+    };
 
-    const handleNewPost = React.useCallback((title: string, content: string) => {
+    const handleNewPost = (title: string, content: string) => {
         const newPost: Post = {
             id: `p${Date.now()}`,
             authorId: 'u1',
@@ -63,7 +63,7 @@ export const PostList = ({ initialPosts, users }: PostListProps) => {
         };
 
         setPosts(prevPosts => [newPost, ...prevPosts]);
-    }, [users]);
+    };
 
     return (
         <div className="max-w-3xl mx-auto">

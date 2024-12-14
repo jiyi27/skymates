@@ -59,22 +59,6 @@ export default function Navigation() {
                         </svg>
                         <span className="text-xs font-medium">搜索</span>
                     </Link>
-
-                    <Link
-                        href="/test"
-                        className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
-                            isActive('/test')
-                                ? 'text-blue-600 dark:text-blue-400'
-                                : 'text-gray-600 dark:text-gray-400 active:text-blue-600 dark:active:text-blue-400'
-                        }`}
-                    >
-                        <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                            />
-                        </svg>
-                        <span className="text-xs font-medium">测试</span>
-                    </Link>
                 </div>
             </div>
         </nav>
