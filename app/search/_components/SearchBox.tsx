@@ -12,6 +12,7 @@ export function SearchBox() {
         searchResults,
         showSuggestions,
         setShowSuggestions,
+        handleSuggestionClick,
         handleSearch,
         handleKeyPress,
         wrapperRef
@@ -55,10 +56,7 @@ export function SearchBox() {
                                 key={term.id}
                                 className="p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0
                          transition-colors"
-                                onClick={() => {
-                                    setQuery(term.name);
-                                    setShowSuggestions(false);
-                                }}
+                                onClick={() => handleSuggestionClick(term.name)}
                             >
                                 <div className="font-medium text-sm md:text-base">{term.name}</div>
                                 <div className="text-xs md:text-sm text-gray-600 mt-1 line-clamp-2">
