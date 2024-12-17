@@ -7,7 +7,7 @@ import React from "react";
 
 // In Next.js version 15 you must await the params, as they are now a promise.
 // `params` should be awaited before using its properties.
-export default async function PostPage({ params }: { params: Promise<{ postId: string }> }) {
+export default async function Page({ params }: { params: Promise<{ postId: string }> }) {
     const { postId } = await params;
     const post = posts.find((p) => p.id === postId);
 
