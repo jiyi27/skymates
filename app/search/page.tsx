@@ -1,4 +1,4 @@
-import { SearchBox } from '@/app/search/_components/SearchBox';
+import { SearchBox } from "@/app/search/_components/SearchBox";
 
 export default function Home() {
     return (
