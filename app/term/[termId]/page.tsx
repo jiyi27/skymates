@@ -4,7 +4,7 @@ import TermContent from "@/app/term/_components/TermContent";
 import TermHeader from "@/app/term/_components/TermHeader";
 import { notFound } from "next/navigation";
 
-export default async function Page({
+export default async function TermDetailPage({
     params,
 }: {
     params: Promise<{ termId: string }>;

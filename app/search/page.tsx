@@ -1,6 +1,6 @@
 import { SearchBox } from "@/app/search/_components/SearchBox";
 
-export default function Home() {
+export default function SearchPage() {
     return (
         <main className="min-h-screen bg-gray-50 mb-20">
             <div className="container mx-auto px-4 py-8 md:py-12">
