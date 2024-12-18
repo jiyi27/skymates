@@ -9,7 +9,7 @@ export default function DiscussPage() {
     });
 
     return (
-        <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className="max-w-4xl mx-auto py-8 px-4 mb-20">
             <PostList
                 initialPosts={sortedPosts}
                 users={users}
