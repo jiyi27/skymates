@@ -8,21 +8,12 @@ interface TermContentProps {
 export default function TermContent({ term }: TermContentProps) {
     return (
         <div className="space-y-6">
-            {/* 定义部分 */}
-            <section>
-                <h2 className="text-xl font-semibold mb-3">定义</h2>
-                <p className="text-gray-700">{term.definition}</p>
-            </section>
-
-            {/* 详细解释部分 */}
             {term.textExplanation && (
                 <section>
-                    <h2 className="text-xl font-semibold mb-3">详细解释</h2>
+                    <h2 className="text-xl font-semibold mb-3">解释</h2>
                     <p className="text-gray-700">{term.textExplanation}</p>
                 </section>
             )}
-
-            {/* 视频部分 */}
             {term.videoUrl && (
                 <section>
                     <h2 className="text-xl font-semibold mb-3">视频讲解</h2>

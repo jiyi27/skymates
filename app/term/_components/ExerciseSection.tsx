@@ -13,7 +13,6 @@ interface ExerciseSectionProps {
 }
 
 export default function ExerciseSection({ exercises }: ExerciseSectionProps) {
-    // 当前题目索引
     const [currentIndex, setCurrentIndex] = useState(0)
     // 记录每个题目的提交状态
     const [submittedStates, setSubmittedStates] = useState<boolean[]>(
@@ -24,7 +23,6 @@ export default function ExerciseSection({ exercises }: ExerciseSectionProps) {
         new Array(exercises.length).fill("")
     )
 
-    // 获取当前题目
     const currentExercise = exercises[currentIndex]
 
     // 处理答案选择
@@ -34,14 +32,12 @@ export default function ExerciseSection({ exercises }: ExerciseSectionProps) {
         setSelections(newSelections)
     }
 
-    // 处理提交
     const handleSubmit = () => {
         const newSubmittedStates = [...submittedStates]
         newSubmittedStates[currentIndex] = true
         setSubmittedStates(newSubmittedStates)
     }
 
-    // 导航处理
     const handlePrevious = () => {
         setCurrentIndex((prev) => Math.max(0, prev - 1))
     }
