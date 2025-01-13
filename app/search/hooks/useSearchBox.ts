@@ -19,24 +19,14 @@ export function useSearchBox() {
     useClickOutside(wrapperRef, () => setShowSuggestions(false));
 
     const handleSearchAndCloseSuggestions = async (searchQuery: string) => {
-        const success = await handleSearch(searchQuery);
-        if (success) {
-            setShowSuggestions(false);
-        }
-    };
-
-    // 处理建议项点击的函数
-    const handleSuggestionClick = async (term: string) => {
-        setQuery(term);
-        await handleSearchAndCloseSuggestions(term);
+        setQuery(searchQuery);
+        await handleSearch(searchQuery);
+        setShowSuggestions(false);
     };
 
     const handleKeyPress = async (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
-            const success = await handleSearch(query);
-            if (success) {
-                setShowSuggestions(false);
-            }
+            await handleSearchAndCloseSuggestions(query);
         }
     };
 
@@ -48,7 +38,7 @@ export function useSearchBox() {
         showSuggestions,
         setShowSuggestions,
         handleSearch: () => handleSearchAndCloseSuggestions(query),
-        handleSuggestionClick,
+        handleSuggestionClick: handleSearchAndCloseSuggestions,
         handleKeyPress,
         wrapperRef
     };
