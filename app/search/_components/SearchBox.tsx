@@ -20,7 +20,6 @@ export function SearchBox() {
 
     return (
         <div className="w-full">
-            {/* 搜索框容器 */}
             <div ref={wrapperRef} className="relative">
                 <div className="relative">
                     {/* 搜索输入框 */}
@@ -59,9 +58,6 @@ export function SearchBox() {
                                 onClick={() => handleSuggestionClick(term.name)}
                             >
                                 <div className="font-medium text-sm md:text-base">{term.name}</div>
-                                <div className="text-xs md:text-sm text-gray-600 mt-1 line-clamp-2">
-                                    {term.description}
-                                </div>
                             </div>
                         ))}
                     </div>
