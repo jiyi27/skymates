@@ -1,6 +1,6 @@
-import {ApiError, Response, Term, TermSuggestion, User} from "@/app/lib/types";
+import {Response, Term, TermSuggestion, User, LoginRequest, RegisterRequest} from "@/app/lib/types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 
 const defaultHeaders = {
     'Content-Type': 'application/json',
@@ -24,10 +24,7 @@ export async function fetchApi<T>(
     const data = await response.json();
 
     if (!response.ok) {
-        throw new ApiError(
-            response.status,
-            data.message || 'Something went wrong'
-        );
+        throw new Error("fetchApi error, status code: " + response.status + ", message: " + data.message);
     }
 
     return data;
@@ -37,17 +34,6 @@ export async function fetchApi<T>(
  * 用户相关 API
  */
 
-interface LoginRequest {
-    email: string;
-    password: string;
-}
-
-interface RegisterRequest {
-    username: string;
-    email: string;
-    password: string;
-}
-
 export const UserAPI = {
     login: (data: LoginRequest) =>
         fetchApi<Response<{ token: string; user: User }>>('/auth/login', {
@@ -56,7 +42,7 @@ export const UserAPI = {
         }),
 
     register: (data: RegisterRequest) =>
-        fetchApi<Response<{ token: string; user: User }>>('/auth/register', {
+        fetchApi<Response<void>>('/auth/register', {
             method: 'POST',
             body: JSON.stringify(data),
         }),

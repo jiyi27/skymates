@@ -1,15 +1,5 @@
-export class ApiError extends Error {
-    constructor(
-        public status: number,
-        message: string,
-    ) {
-        super(message);
-        this.name = 'ApiError';
-    }
-}
-
 export interface Response<T> {
-    code: number;
+    status: number;
     message: string;
     data: T;
 }
@@ -39,3 +29,13 @@ export interface Category {
     name: string;
 }
 
+export interface LoginRequest {
+    email: string;
+    password: string;
+}
+
+export interface RegisterRequest {
+    username: string;
+    email: string;
+    password: string;
+}
