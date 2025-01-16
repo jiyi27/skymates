@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserAPI } from "@/app/lib/api";
-import type { LoginRequest } from "@/app/lib/types";
+import {ApiError, LoginRequest} from "@/app/lib/types";
 
 export const LoginForm = () => {
     const router = useRouter();
@@ -28,18 +28,20 @@ export const LoginForm = () => {
         try {
             const response = await UserAPI.login(data);
 
-            if (response.data.token) {
+            if (response.data?.token) {
                 localStorage.setItem("token", response.data.token);
                 localStorage.setItem("user", JSON.stringify(response.data.user));
                 router.push("/");
             } else {
-                setError("Login failed, status: " + response.status + ", message: " + response.message);
+                setError("Login failed: " + response.message + ", status: " + response.statusCode);
             }
-        } catch (err: unknown) {
-            if (err instanceof Error) {
+        } catch (err) {
+            if (err instanceof ApiError) {
+                setError("Login failed: " + err.message + ", status: " + err.statusCode);
+            } else if (err instanceof Error) {
                 setError("Login failed: " + err.message);
             } else {
-                setError("An error occurred during login");
+                setError("An unknown error occurred during login");
             }
         } finally {
             setLoading(false);

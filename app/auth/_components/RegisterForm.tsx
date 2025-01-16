@@ -1,22 +1,22 @@
 'use client';
 
-import React, { useState } from "react";
+import React, {useRef, useState} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserAPI } from "@/app/lib/api";
-import type { RegisterRequest } from "@/app/lib/types";
+import {ApiError, RegisterRequest} from "@/app/lib/types";
 
 export const RegisterForm = () => {
+    const formRef = useRef<HTMLFormElement>(null);
     const [error, setError] = useState<string>("");
-    const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState<string>("");
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError("");
-        setLoading(false);
+        setSuccess("");
 
         const formData = new FormData(e.currentTarget);
         const data: RegisterRequest = {
@@ -28,19 +28,20 @@ export const RegisterForm = () => {
         try {
             await UserAPI.register(data);
             setSuccess("Registration successful!");
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                setError("Registration failed: " + err.message);
+            formRef.current?.reset();
+        } catch (err) {
+            if (err instanceof ApiError) {
+                setError("Register failed: " + err.message + ", status: " + err.statusCode);
+            } else if (err instanceof Error) {
+                setError("Register failed: " + err.message);
             } else {
-                setError("An error occurred during registration");
+                setError("An unknown error occurred during Register");
             }
-        } finally {
-            setLoading(false);
         }
     };
 
     return (
-        <form onSubmit={onSubmit} className="space-y-4 mt-4">
+        <form ref={formRef} onSubmit={onSubmit} className="space-y-4 mt-4">
             {error && (
                 <Alert variant="destructive">
                     <AlertDescription>{error}</AlertDescription>
@@ -86,11 +87,9 @@ export const RegisterForm = () => {
                 />
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating account..." : "Register"}
+            <Button type="submit" className="w-full">
+                {"Register"}
             </Button>
         </form>
     );
 };
-
-// 其他组件保持不变...

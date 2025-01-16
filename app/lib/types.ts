@@ -1,7 +1,25 @@
-export interface Response<T> {
-    status: number;
+// 后端通用响应体结构,
+// data?: T 表示 data 为可选字段, 比如 json 格式为: {"message": "success"}
+export interface ApiResponse<T> {
     message: string;
-    data: T;
+    data?: T;
+}
+
+// 供前端调用者使用的响应体结构, 包含了状态码用于判断请求是否成功, 用户是否登录等状态
+export interface Response<T> {
+    statusCode: number;
+    message: string;
+    data?: T;
+}
+
+export class ApiError extends Error {
+    constructor(
+        public statusCode: number,
+        message: string,
+    ) {
+        super(message);
+        this.name = 'ApiError';
+    }
 }
 
 export interface User {
