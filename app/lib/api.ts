@@ -24,6 +24,7 @@ export async function fetchApi<T>(
     // 这样可以避免副作用, 使函数更容易测试和调试
     const mergedOptions: RequestInit = {
         ...options,
+        credentials: 'include',
         headers: {
             ...defaultHeaders,
             ...options.headers,
@@ -34,6 +35,8 @@ export async function fetchApi<T>(
     // 使用类型断言(type assertion), 更好的进行类型推断
     // 如果响应体不合法(比如响应体为空, 或者不符合类型断言), 这里会抛出异常
     const apiResponse = await response.json() as ApiResponse<T>;
+
+    console.log('apiResponse:', apiResponse);
 
     // response.ok 为 true 表示状态码在 200-299 之间
     if (!response.ok) {
@@ -90,7 +93,7 @@ export const UserAPI = {
  */
 export const TermAPI = {
     getTerm: (id: string) =>
-        fetchApi<Term>(`/terms/${id}`),
+        fetchApi<Term>(`/term/${id}`),
 
     getSuggestions: (query: string) =>
         fetchApi<TermSuggestion[]>(`/terms/suggestions?query=${encodeURIComponent(query)}`),

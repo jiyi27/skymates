@@ -24,7 +24,7 @@ export function useSuggestions(debouncedQuery: string) {
                     setSuggestions(results.data ?? []);
                 }
             } catch (error) {
-                console.error('Failed to fetch suggestions:', error);
+                console.error('useSuggestions() error:', error);
                 if (isMounted) {
                     setSuggestions([]);
                 }
