@@ -34,7 +34,7 @@ export interface Term {
     name: string;
     explanation: string;
     video_url: string;
-    categories: string[];
+    categories: Category[];
 }
 
 export interface TermSuggestion {

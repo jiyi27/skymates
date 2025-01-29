@@ -3,6 +3,7 @@
 
 import { Search } from 'lucide-react';
 import {useSearchBox} from "@/app/search/hooks/useSearchBox";
+import Link from "next/link";
 
 export function SearchBox() {
     const {
@@ -70,15 +71,20 @@ export function SearchBox() {
                     <h2 className="text-xl font-semibold mb-4">搜索结果</h2>
                     <div className="grid gap-4">
                         {searchResults.map((result) => (
-                            <div
+                            <Link
+                                href={`/term/${result.id}`}
                                 key={result.id}
-                                className="p-4 bg-white rounded-lg shadow-sm border hover:shadow-md
-                         transition-shadow"
                             >
-                                <h3 className="text-lg font-medium text-gray-900">
-                                    {result.name}
-                                </h3>
-                            </div>
+                                <div
+                                    key={result.id}
+                                    className="p-4 bg-white rounded-lg shadow-sm border hover:shadow-md
+                             transition-shadow"
+                                >
+                                    <h3 className="text-lg font-medium text-gray-900">
+                                        {result.name}
+                                    </h3>
+                                </div>
+                            </Link>
                         ))}
                     </div>
                 </div>

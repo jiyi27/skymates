@@ -1,5 +1,5 @@
 // app/term/_components/term-content.tsx
-import { type Term } from "@/app/term/_types/type";
+import { Term } from "@/app/lib/types";
 
 interface TermContentProps {
     term: Term;
@@ -8,13 +8,12 @@ interface TermContentProps {
 export default function TermContent({ term }: TermContentProps) {
     return (
         <div className="space-y-6">
-            {term.textExplanation && (
+            {term.explanation && (
                 <section>
-                    <h2 className="text-xl font-semibold mb-3">解释</h2>
-                    <p className="text-gray-700">{term.textExplanation}</p>
+                    <p className="text-gray-700">{term.explanation}</p>
                 </section>
             )}
-            {term.videoUrl && (
+            {term.video_url && (
                 <section>
                     <h2 className="text-xl font-semibold mb-3">视频讲解</h2>
                     <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
