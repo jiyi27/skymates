@@ -12,7 +12,7 @@ export default async function TermDetailPage({
     const { termId } = await params;
     let term: Term | null = null;
     try {
-        const response = await TermAPI.getTerm(termId);
+        const response = await TermAPI.getTermById(termId);
         term = response.data ?? null;
     } catch (error) {
         console.error('TermDetailPage.getTerm() error:', error);

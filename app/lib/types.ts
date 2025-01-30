@@ -42,6 +42,12 @@ export interface TermSuggestion {
     name: string;
 }
 
+export interface ListTermsByCategory {
+    terms: Term[];
+    last_id: string | null;
+    has_more: boolean;
+}
+
 export interface Category {
     id: string;
     name: string;

@@ -6,7 +6,7 @@ import {
     LoginRequest,
     RegisterRequest,
     ApiResponse,
-    ApiError
+    ApiError, ListTermsByCategory
 } from "@/app/lib/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
@@ -35,9 +35,6 @@ export async function fetchApi<T>(
     // 使用类型断言(type assertion), 更好的进行类型推断
     // 如果响应体不合法(比如响应体为空, 或者不符合类型断言), 这里会抛出异常
     const apiResponse = await response.json() as ApiResponse<T>;
-    console.log('response:', apiResponse);
-
-    console.log('apiResponse:', apiResponse);
 
     // response.ok 为 true 表示状态码在 200-299 之间
     if (!response.ok) {
@@ -93,12 +90,18 @@ export const UserAPI = {
  * 术语相关 API
  */
 export const TermAPI = {
-    getTerm: (id: string) =>
+    getTermById: (id: string) =>
         fetchApi<Term>(`/term/${id}`),
 
     getSuggestions: (query: string) =>
         fetchApi<TermSuggestion[]>(`/terms/suggestions?query=${encodeURIComponent(query)}`),
 
-    getTerms: (category: string) =>
-        fetchApi<Term[]>(`/terms?category=${encodeURIComponent(category)}`),
+    getTermsByCategoryId: (categoryId: string, options?: { lastId?: string; limit?: number }) =>
+        fetchApi<ListTermsByCategory>(
+            `/terms?${new URLSearchParams({
+                categoryId,
+                ...(options?.lastId ? { last_id: options.lastId } : {}),
+                ...(options?.limit ? { limit: options.limit.toString() } : { limit: '20' })
+            }).toString()}`
+        ),
 };
