@@ -5,9 +5,9 @@ import CategoryPageContent from "@/app/category/_components/CategoryPageContent"
 export default async function CategoryPage({
    params
 }: {
-    params: { categoryId: string }
+    params: Promise<{ categoryId: string }>
 }) {
-    const { categoryId } = params;
+    const { categoryId } = await params;
     const initialTerms = await TermAPI.getTermsByCategoryId(categoryId);
 
 
