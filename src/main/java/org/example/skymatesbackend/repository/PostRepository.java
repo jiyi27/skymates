@@ -23,9 +23,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Post> searchPosts(String keyword, Pageable pageable);
 
-    /**
-     * 带乐观锁的自定义更新帖子点赞数
-     */
+    // 乐观锁更新帖子点赞数
+    // 这里的 int 返回值表示受影响的行数，如果返回值为0，说明更新失败
     @Modifying
     @Query("UPDATE Post p " +
             "SET p.likesCount = p.likesCount + :delta, " +
@@ -33,13 +32,20 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE p.id = :postId AND p.version = :version")
     int updateLikesCountWithVersion(
             @Param("postId") Long postId,
-            @Param("version") int version,
+            @Param("version") long version,
             @Param("delta") int delta);
 
-    // 更新帖子评论数
+    // 乐观锁更新帖子评论数
+    // 这里的 int 返回值表示受影响的行数，如果返回值为0，说明更新失败
     @Modifying
-    @Query("UPDATE Post p SET p.commentsCount = p.commentsCount + :delta WHERE p.id = :postId")
-    void updateCommentsCount(@Param("postId") Long postId, @Param("delta") int delta);
+    @Query("UPDATE Post p " +
+            "SET p.commentsCount = p.commentsCount + :delta, " +
+            "    p.version = p.version + 1 " +
+            "WHERE p.id = :postId AND p.version = :version")
+    int updateCommentsCountWithVersion(
+            @Param("postId") Long postId,
+            @Param("version") long version,
+            @Param("delta") int delta);
 
     // 软删除帖子
     @Modifying

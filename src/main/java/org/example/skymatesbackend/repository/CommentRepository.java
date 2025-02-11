@@ -22,11 +22,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("SELECT c FROM Comment c WHERE c.userId = :userId AND c.status = 1")
     Page<Comment> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
-    /**
-     * 带乐观锁的自定义更新评论点赞数
-     *
-     * @return
-     */
+    // 乐观锁更新评论点赞数
+    // 这里的 int 返回值表示受影响的行数，如果返回值为0，说明更新失败
     @Modifying
     @Query("UPDATE Comment c " +
             "SET c.likesCount = c.likesCount + :delta, " +
@@ -34,13 +31,20 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "WHERE c.id = :commentId AND c.version = :version")
     int updateLikesCountWithVersion(
             @Param("commentId") Long commentId,
-            @Param("version") int version,
+            @Param("version") long version,
             @Param("delta") int delta);
 
-    // 更新评论回复数
+    // 乐观锁更新评论回复数
+    // 这里的 int 返回值表示受影响的行数，如果返回值为0，说明更新失败
     @Modifying
-    @Query("UPDATE Comment c SET c.repliesCount = c.repliesCount + :delta WHERE c.id = :commentId")
-    void updateRepliesCount(@Param("commentId") Long commentId, @Param("delta") int delta);
+    @Query("UPDATE Comment c " +
+            "SET c.repliesCount = c.repliesCount + :delta, " +
+            "    c.version = c.version + 1 " +
+            "WHERE c.id = :commentId AND c.version = :version")
+    int updateRepliesCountWithVersion(
+            @Param("commentId") Long commentId,
+            @Param("version") long version,
+            @Param("delta") int delta);
 
     // 软删除评论
     @Modifying

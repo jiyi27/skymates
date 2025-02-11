@@ -59,5 +59,5 @@ public class Comment {
     // JPA 在 UPDATE 时会 检查 version 是否匹配，不匹配则更新失败
     @Version
     @Column(name = "version")
-    private int version;
+    private long version;
 }

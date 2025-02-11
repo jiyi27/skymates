@@ -1,10 +1,10 @@
 package org.example.skymatesbackend.service.impl;
 
+import org.example.skymatesbackend.converter.PageConverter;
+import org.example.skymatesbackend.converter.UserConverter;
 import org.example.skymatesbackend.dto.PageDTO;
 import org.example.skymatesbackend.dto.PostDTO;
-import org.example.skymatesbackend.dto.UserDTO;
 import org.example.skymatesbackend.model.Post;
-import org.example.skymatesbackend.model.User;
 import org.example.skymatesbackend.repository.PostLikeRepository;
 import org.example.skymatesbackend.repository.PostRepository;
 import org.example.skymatesbackend.service.PostService;
@@ -18,11 +18,9 @@ import org.example.skymatesbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -30,15 +28,21 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostLikeRepository postLikeRepository;
+    private final UserConverter userConverter;
+    private final PageConverter pageConverter;
 
     @Autowired
     public PostServiceImpl(
             PostRepository postRepository,
             UserRepository userRepository,
-            PostLikeRepository postLikeRepository) {
+            PostLikeRepository postLikeRepository,
+            UserConverter userConverter,
+            PageConverter pageConverter) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.postLikeRepository = postLikeRepository;
+        this.userConverter = userConverter;
+        this.pageConverter = pageConverter;
     }
 
     @Override
@@ -112,74 +116,74 @@ public class PostServiceImpl implements PostService {
         }
     }
 
+    /**
+     * 获取指定用户发布的帖子（分页）
+     *
+     * @param userId 用户 ID
+     * @param page   当前页数
+     * @param size   每页大小
+     * @return 用户的帖子分页数据
+     */
     @Override
     @Transactional(readOnly = true)
     public PageDTO<PostDTO> getUserPosts(Long userId, int page, int size) {
+        // 按创建时间降序排序，获取分页对象
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // 查询该用户发布的帖子
         Page<Post> postPage = postRepository.findByUserId(userId, pageable);
 
+        // 查询该用户点赞过的帖子 ID
         List<Long> likedPostIds = postLikeRepository.findPostIdsByUserId(userId);
 
-        return convertToPageDTO(postPage, likedPostIds);
+        // 使用 PageConverter 进行分页转换
+        return pageConverter.convertToPageDTO(postPage,
+                post -> convertToDTO(post, likedPostIds.contains(post.getId())));
     }
 
+    /**
+     * 获取帖子列表（支持关键字搜索，分页）
+     *
+     * @param keyword       搜索关键字（可选）
+     * @param page          当前页数
+     * @param size          每页大小
+     * @param currentUserId 当前用户 ID（用于获取点赞信息）
+     * @return 帖子分页数据
+     */
     @Override
     @Transactional(readOnly = true)
     public PageDTO<PostDTO> getPosts(String keyword, int page, int size, Long currentUserId) {
+        // 按创建时间降序排序，获取分页对象
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<Post> postPage;
         if (StringUtils.hasText(keyword)) {
+            // 关键词搜索
             postPage = postRepository.searchPosts(keyword, pageable);
         } else {
+            // 查询所有活跃帖子
             postPage = postRepository.findAllActivePosts(pageable);
         }
 
-        List<Long> likedPostIds = currentUserId != null ?
-                postLikeRepository.findPostIdsByUserId(currentUserId) :
-                Collections.emptyList();
+        // 如果当前用户已登录，查询 TA 点赞过的帖子 ID；否则返回空列表
+        List<Long> likedPostIds = (currentUserId != null)
+                ? postLikeRepository.findPostIdsByUserId(currentUserId)
+                : Collections.emptyList();
 
-        return convertToPageDTO(postPage, likedPostIds);
+        // 使用 PageConverter 进行分页转换
+        return pageConverter.convertToPageDTO(postPage,
+                post -> convertToDTO(post, likedPostIds.contains(post.getId())));
     }
-
-    private PageDTO<PostDTO> convertToPageDTO(Page<Post> postPage, List<Long> likedPostIds) {
-        List<PostDTO> postDTOs = postPage.getContent().stream()
-                .map(post -> convertToDTO(post, likedPostIds.contains(post.getId())))
-                .collect(Collectors.toList());
-
-        PageDTO<PostDTO> pageDTO = new PageDTO<>();
-        pageDTO.setContent(postDTOs);
-        pageDTO.setPageNumber(postPage.getNumber());
-        pageDTO.setPageSize(postPage.getSize());
-        pageDTO.setTotalElements(postPage.getTotalElements());
-        pageDTO.setTotalPages(postPage.getTotalPages());
-        pageDTO.setHasNext(postPage.hasNext());
-
-        return pageDTO;
-    }
-
     private PostDTO convertToDTO(Post post, boolean isLiked) {
         PostDTO dto = new PostDTO();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
-        dto.setAuthor(convertToDTO(post.getUser()));
+        dto.setAuthor(userConverter.convertToDTO(post.getUser()));
         dto.setLikesCount(post.getLikesCount());
         dto.setCommentsCount(post.getCommentsCount());
         dto.setIsLiked(isLiked);
         dto.setCreatedAt(post.getCreatedAt());
-        return dto;
-    }
-
-    private UserDTO convertToDTO(User user) {
-        if (user == null) {
-            return null;
-        }
-        UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setEmail(user.getEmail());
-        dto.setCreatedAt(user.getCreatedAt());
         return dto;
     }
 }

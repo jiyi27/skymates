@@ -48,5 +48,5 @@ public class Post {
     // 乐观锁, @Version 字段在每次更新时会自动递增
     // JPA 在 UPDATE 时会 检查 version 是否匹配，不匹配则更新失败
     @Version
-    private int version;
+    private long version;
 }
