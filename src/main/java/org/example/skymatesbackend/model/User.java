@@ -1,11 +1,14 @@
 package org.example.skymatesbackend.model;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Data  // Lombok 注解，自动生成 getter、setter 等
+@Getter
+@Setter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

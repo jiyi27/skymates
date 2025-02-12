@@ -1,12 +1,15 @@
 package org.example.skymatesbackend.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "post_likes")
-@Data
+@Getter
+@Setter
 public class PostLike {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

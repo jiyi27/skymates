@@ -174,6 +174,7 @@ public class PostServiceImpl implements PostService {
         return pageConverter.convertToPageDTO(postPage,
                 post -> convertToDTO(post, likedPostIds.contains(post.getId())));
     }
+
     private PostDTO convertToDTO(Post post, boolean isLiked) {
         PostDTO dto = new PostDTO();
         dto.setId(post.getId());
