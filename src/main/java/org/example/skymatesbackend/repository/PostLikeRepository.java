@@ -2,8 +2,6 @@ package org.example.skymatesbackend.repository;
 
 import org.example.skymatesbackend.model.PostLike;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
@@ -16,6 +14,5 @@ public interface PostLikeRepository extends JpaRepository<PostLike, Long> {
     // 统计帖子的点赞数
     long countByPostId(Long postId);
     // 获取用户点赞的所有帖子ID
-    @Query("SELECT pl.postId FROM PostLike pl WHERE pl.userId = :userId")
-    List<Long> findPostIdsByUserId(@Param("userId") Long userId);
+    List<Long> findPostIdsByUserId(Long userId);
 }

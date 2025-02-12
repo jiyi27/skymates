@@ -131,7 +131,7 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         // 查询该用户发布的帖子
-        Page<Post> postPage = postRepository.findByUserId(userId, pageable);
+        Page<Post> postPage = postRepository.findByUserIdAndStatus(userId, 1, pageable);
 
         // 查询该用户点赞过的帖子 ID
         List<Long> likedPostIds = postLikeRepository.findPostIdsByUserId(userId);

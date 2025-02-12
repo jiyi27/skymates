@@ -16,6 +16,5 @@ public interface CommentLikeRepository extends JpaRepository<CommentLike, Long> 
     // 统计评论的点赞数
     long countByCommentId(Long commentId);
     // 获取用户点赞的所有评论ID
-    @Query("SELECT cl.commentId FROM CommentLike cl WHERE cl.userId = :userId")
-    List<Long> findCommentIdsByUserId(@Param("userId") Long userId);
+    List<Long> findCommentIdsByUserId(Long userId);
 }

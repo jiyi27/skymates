@@ -9,9 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
-    // 查找用户的所有帖子
-    @Query("SELECT p FROM Post p WHERE p.userId = :userId AND p.status = 1")
-    Page<Post> findByUserId(Long userId, Pageable pageable);
+    // 查找用户的所有帖子, 排序可以通过 Pageable 参数传递, status = 1 表示正常状态的帖子
+    Page<Post> findByUserIdAndStatus(Long userId, int status, Pageable pageable);
 
     // 查找所有正常状态的帖子（按创建时间倒序）
     @Query("SELECT p FROM Post p WHERE p.status = 1 ORDER BY p.createdAt DESC")

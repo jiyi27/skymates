@@ -41,9 +41,9 @@ public class Post {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // 帖子的评论列表，需要时才加载
-    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
-    private List<Comment> comments;
+    // 如果一个帖子有 1000 条评论，JPA 可能会一次性加载所有评论，占用大量内存，降低性能
+    // 所以通最好不要在 Post 实体中直接加载 comments
+    // private List<Comment> comments;
 
     // 乐观锁, @Version 字段在每次更新时会自动递增
     // JPA 在 UPDATE 时会 检查 version 是否匹配，不匹配则更新失败
