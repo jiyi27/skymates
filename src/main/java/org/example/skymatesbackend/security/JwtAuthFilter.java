@@ -22,10 +22,10 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtUtils jwtUtils;
+    private final JwtTokenService jwtUtils;
 
     @Autowired
-    public JwtAuthFilter(JwtUtils jwtUtils) {
+    public JwtAuthFilter(JwtTokenService jwtUtils) {
         this.jwtUtils = jwtUtils;
     }
 

@@ -49,9 +49,11 @@ public class UserDTO {
     @Getter
     @Setter
     @Builder
-    public static class Response {
-        private String username;
-        private String email;
+    public static class JwtResponse {
         private String token;
+
+        public JwtResponse(String token) {
+            this.token = token;
+        }
     }
 }

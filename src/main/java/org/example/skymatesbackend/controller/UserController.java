@@ -22,18 +22,21 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDTO.Response> login(@RequestBody @Valid UserDTO.LoginRequest request) {
-        UserDTO.Response user = userService.login(request);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<UserDTO.JwtResponse> login(@RequestBody @Valid UserDTO.LoginRequest request) {
+        return userService.login(request);
     }
 
     /**
      * 获取用户信息
      * @param userId 用户ID
      * @return 用户信息
+     * @PathVariable("userId") 必须加上("userId")，否则会报错
+     * java.lang.IllegalArgumentException: Name for argument of type [java.lang.Long] not specified,
+     * and parameter name information not available via reflection.
+     * Ensure that the compiler uses the '-parameters' flag.
      */
     @GetMapping("/{userId}")
-    public ResponseEntity<UserDTO> getUser(@PathVariable Long userId) {
+    public ResponseEntity<UserDTO> getUser(@PathVariable("userId") Long userId) {
         UserDTO user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }

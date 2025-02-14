@@ -1,7 +1,11 @@
 package org.example.skymatesbackend.service.impl;
 
 import org.example.skymatesbackend.dto.UserDTO;
-import org.example.skymatesbackend.security.JwtUtils;
+import org.example.skymatesbackend.security.JwtTokenService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.transaction.annotation.Transactional;
 import org.example.skymatesbackend.exception.BusinessException;
 import org.example.skymatesbackend.model.User;
@@ -18,16 +22,19 @@ import java.time.LocalDateTime;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtUtils jwtUtils;
+    private final JwtTokenService jwtUtils;
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
     public UserServiceImpl(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
-            JwtUtils jwtUtils) {
+            JwtTokenService jwtUtils,
+            AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.authenticationManager = authenticationManager;
     }
 
     /**
@@ -58,20 +65,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO.Response login(UserDTO.LoginRequest request) {
-        // 根据用户名查询用户
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("用户名或密码错误"));
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("用户名或密码错误");
-        }
-        String token = jwtUtils.generateToken(user.getUsername());
-
-        return UserDTO.Response.builder()
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .token(token)
-                .build();
+    public ResponseEntity<UserDTO.JwtResponse> login(UserDTO.LoginRequest request) {
+        // 1. 封装用户名密码
+        UsernamePasswordAuthenticationToken authRequest =
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword());
+        // 2. 调用 AuthenticationManager 进行认证
+        // 如果认证不通过，authenticate(...) 会抛出异常, 由全局异常处理器处理
+        Authentication authentication = authenticationManager.authenticate(authRequest);
+        // 3. 如果认证通过，生成 JWT
+        String jwt = jwtUtils.generateToken(authentication);
+        // 4. 返回 JWT 给客户端（可放在 Body，也可放在 Header）
+        return ResponseEntity.ok(new UserDTO.JwtResponse(jwt));
     }
 
     @Override
