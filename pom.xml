@@ -36,10 +36,17 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Spring Security (用于密码加密) -->
+        <!-- Spring Security 默认保护所有 endpoints -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- JWT -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
         </dependency>
 
         <dependency>
@@ -67,22 +74,35 @@
             <version>8.0.33</version> <!-- 确保这里是最新版本 -->
         </dependency>
 
+        <!-- Lombok 在 编译时 生成 getter/setter，但 运行时不需要 Lombok 依赖，所以 provided 是合适的 -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
-            <!-- Lombok 在 编译时 生成 getter/setter，但 运行时不需要 Lombok 依赖，所以 provided 是合适的 -->
+            <version>1.18.36</version>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
-
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!-- 添加 lombok 插件, 否则手动编译时 lombok 注解不生效 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.36</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
         </plugins>
     </build>

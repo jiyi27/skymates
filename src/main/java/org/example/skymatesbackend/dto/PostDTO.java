@@ -1,12 +1,14 @@
 package org.example.skymatesbackend.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 public class PostDTO {
     private Long id;
     private String title;
@@ -18,7 +20,8 @@ public class PostDTO {
     private LocalDateTime createdAt;
 
     // 用于创建帖子
-    @Data
+    @Getter
+    @Setter
     public static class CreateRequest {
         @NotBlank(message = "标题不能为空")
         @Size(max = 200, message = "标题最大长度为200")
@@ -29,7 +32,8 @@ public class PostDTO {
     }
 
     // 用于更新帖子
-    @Data
+    @Getter
+    @Setter
     public static class UpdateRequest {
         @Size(max = 200, message = "标题最大长度为200")
         private String title;

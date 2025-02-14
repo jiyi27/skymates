@@ -6,6 +6,9 @@ public interface UserService {
     // 创建新用户
     UserDTO createUser(UserDTO.CreateRequest request);
 
+    // 用户登录
+    UserDTO.Response login(UserDTO.LoginRequest request);
+
     // 根据ID获取用户
     UserDTO getUserById(Long userId);
 

@@ -15,14 +15,15 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
 
-    /**
-     * 用户注册
-     * @param request 注册请求
-     * @return 用户信息
-     */
     @PostMapping("/register")
     public ResponseEntity<UserDTO> register(@RequestBody @Valid UserDTO.CreateRequest request) {
         UserDTO user = userService.createUser(request);
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserDTO.Response> login(@RequestBody @Valid UserDTO.LoginRequest request) {
+        UserDTO.Response user = userService.login(request);
         return ResponseEntity.ok(user);
     }
 

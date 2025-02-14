@@ -1,11 +1,14 @@
 package org.example.skymatesbackend.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 public class CommentDTO {
     private Long id;
     private Long postId;
@@ -19,7 +22,8 @@ public class CommentDTO {
     private LocalDateTime createdAt;
 
     // 用于创建评论
-    @Data
+    @Getter
+    @Setter
     public static class CreateRequest {
         @NotBlank(message = "评论内容不能为空")
         private String content;
