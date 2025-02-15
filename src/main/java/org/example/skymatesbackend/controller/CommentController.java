@@ -53,7 +53,7 @@ public class CommentController {
             @PathVariable Long postId,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-            @AuthenticationPrincipal(errorOnInvalidType = false) UserDetails userDetails) {
+            @AuthenticationPrincipal() UserDetails userDetails) {
 
         // 获取当前用户ID（如果已登录）
         Long currentUserId = userDetails != null ?

@@ -1,24 +1,31 @@
 package org.example.skymatesbackend.config;
 
 import lombok.RequiredArgsConstructor;
-import org.example.skymatesbackend.security.CustomUserDetailsService;
+import lombok.extern.slf4j.Slf4j;
+import org.example.skymatesbackend.model.User;
+import org.example.skymatesbackend.repository.UserRepository;
 import org.example.skymatesbackend.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Collections;
+
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final CustomUserDetailsService userDetailsService;
+    private final UserRepository userRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -26,15 +33,25 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        AuthenticationManagerBuilder authManagerBuilder =
-                http.getSharedObject(AuthenticationManagerBuilder.class);
+    public UserDetailsService userDetailsService() {
+        return username -> {
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException("用户名不存在: " + username));
 
-        authManagerBuilder
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder());
+            log.info("用户信息: {}", user);
 
-        return authManagerBuilder.build();
+            // 把自己的 User 转换成 Spring Security 提供的 UserDetails 对象
+            return new org.springframework.security.core.userdetails.User(
+                    user.getUsername(),
+                    user.getPasswordHash(),
+                    Collections.emptyList()
+            );
+        };
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
