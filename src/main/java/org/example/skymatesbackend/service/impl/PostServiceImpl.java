@@ -136,7 +136,6 @@ public class PostServiceImpl implements PostService {
         // 查询该用户点赞过的帖子 ID
         List<Long> likedPostIds = postLikeRepository.findPostIdsByUserId(userId);
 
-        // 使用 PageConverter 进行分页转换
         return pageConverter.convertToPageDTO(postPage,
                 post -> convertToDTO(post, likedPostIds.contains(post.getId())));
     }

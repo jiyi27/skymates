@@ -1,5 +1,6 @@
 package org.example.skymatesbackend.config;
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.skymatesbackend.model.User;
@@ -62,17 +63,28 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtAuthFilter jwtAuthenticationFilter) throws Exception {
 
+        // 禁用 CSRF（因为使用的是 JWT 认证）
         http.csrf(AbstractHttpConfigurer::disable);
 
+        // 设置会话管理策略为无状态（STATELESS），适用于 JWT 认证
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        // 配置授权规则
         http.authorizeHttpRequests(auth -> auth
+                // 允许所有人访问登录和注册接口
                 .requestMatchers("/api/users/login", "/api/users/register").permitAll()
+                // 允许所有人访问错误页面（防止 Spring Security 拦截 500, 400 等错误页面）
+                // 如果不配置，因抛出异常而返回错误码如 409, 400 时，Spring Security 会拦截错误页面，
+                // 客户端看到的永远是返回 403 状态码
+                .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                // 其他请求都需要身份验证
                 .anyRequest().authenticated()
         );
 
+        // 在 UsernamePasswordAuthenticationFilter 之前添加自定义的 JWT 认证过滤器
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 }

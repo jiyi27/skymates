@@ -1,6 +1,5 @@
 package org.example.skymatesbackend.service.impl;
 
-import org.example.skymatesbackend.exception.BusinessException;
 import org.example.skymatesbackend.model.Comment;
 import org.example.skymatesbackend.model.CommentLike;
 import org.example.skymatesbackend.model.Post;
@@ -11,8 +10,10 @@ import org.example.skymatesbackend.repository.PostLikeRepository;
 import org.example.skymatesbackend.repository.PostRepository;
 import org.example.skymatesbackend.service.LikeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void likePost(Long postId, Long userId) {
         if (isPostLiked(postId, userId)) {
-            throw new BusinessException("已经点赞过该帖子");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "已经点赞过该帖子");
         }
         PostLike postLike = new PostLike();
         postLike.setPostId(postId);
@@ -54,7 +55,7 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void unlikePost(Long postId, Long userId) {
         if (!isPostLiked(postId, userId)) {
-            throw new BusinessException("未点赞过该帖子");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "未点赞过该帖子");
         }
         postLikeRepository.deleteByPostIdAndUserId(postId, userId);
         updatePostLikesCount(postId, -1);
@@ -65,7 +66,7 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void likeComment(Long commentId, Long userId) {
         if (isCommentLiked(commentId, userId)) {
-            throw new BusinessException("已经点赞过该评论");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "已经点赞过该评论");
         }
         CommentLike commentLike = new CommentLike();
         commentLike.setCommentId(commentId);
@@ -79,7 +80,7 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void unlikeComment(Long commentId, Long userId) {
         if (!isCommentLiked(commentId, userId)) {
-            throw new BusinessException("未点赞过该评论");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "未点赞过该评论");
         }
         commentLikeRepository.deleteByCommentIdAndUserId(commentId, userId);
         updateCommentLikesCount(commentId, -1);
@@ -109,19 +110,19 @@ public class LikeServiceImpl implements LikeService {
 
     private void updatePostLikesCount(Long postId, int delta) {
         for (int retry = 0; retry < 3; retry++) {
-            Post post = postRepository.findById(postId).orElseThrow(() -> new BusinessException("帖子不存在"));
+            Post post = postRepository.findById(postId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在"));
             int updatedRows = postRepository.updateLikesCountWithVersion(postId, post.getVersion(), delta);
             if (updatedRows > 0) return;
         }
-        throw new RuntimeException("点赞操作出现并发冲突，请稍后重试");
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "点赞操作出现并发冲突，请稍后重试");
     }
 
     private void updateCommentLikesCount(Long commentId, int delta) {
         for (int retry = 0; retry < 3; retry++) {
-            Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new BusinessException("评论不存在"));
+            Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "评论不存在"));
             int updatedRows = commentRepository.updateLikesCountWithVersion(commentId, comment.getVersion(), delta);
             if (updatedRows > 0) return;
         }
-        throw new RuntimeException("点赞操作出现并发冲突，请稍后重试");
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "点赞操作出现并发冲突，请稍后重试");
     }
 }
