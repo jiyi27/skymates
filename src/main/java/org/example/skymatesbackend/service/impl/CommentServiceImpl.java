@@ -4,7 +4,6 @@ import org.example.skymatesbackend.converter.PageConverter;
 import org.example.skymatesbackend.converter.UserConverter;
 import org.example.skymatesbackend.dto.CommentDTO;
 import org.example.skymatesbackend.dto.PageDTO;
-import org.example.skymatesbackend.exception.BusinessException;
 import org.example.skymatesbackend.model.Comment;
 import org.example.skymatesbackend.model.Post;
 import org.example.skymatesbackend.repository.CommentLikeRepository;
@@ -16,8 +15,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -50,18 +51,18 @@ public class CommentServiceImpl implements CommentService {
     public CommentDTO createComment(Long postId, Long userId, CommentDTO.CreateRequest request) {
         // 验证帖子是否存在
         postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException("帖子不存在"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在"));
 
         Long parentId = request.getParentId();
 
         if (parentId != null) {
             // 验证父评论是否存在
             Comment parentComment = commentRepository.findById(parentId)
-                    .orElseThrow(() -> new BusinessException("父评论不存在"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "父评论不存在"));
 
             // 验证父评论是否属于当前帖子
             if (!parentComment.getPostId().equals(postId)) {
-                throw new BusinessException("父评论不属于该帖子，无法回复");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "父评论不属于当前帖子");
             }
         }
 
@@ -91,12 +92,12 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new BusinessException("评论不存在"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "评论不存在"));
 
         // 软删除评论
         int updatedRows = commentRepository.softDeleteComment(commentId, userId);
         if (updatedRows == 0) {
-            throw new BusinessException("删除失败，可能评论不存在或无权限");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "评论不存在或无权删除评论");
         }
 
         // 如果是回复评论，则减少父评论的回复数
@@ -154,24 +155,24 @@ public class CommentServiceImpl implements CommentService {
     private void updatePostCommentsCount(Long postId, int delta) {
         for (int retry = 0; retry < 3; retry++) {
             Post post = postRepository.findById(postId)
-                    .orElseThrow(() -> new BusinessException("帖子不存在"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在"));
 
             int updatedRows = postRepository.updateCommentsCountWithVersion(postId, post.getVersion(), delta);
             if (updatedRows > 0) return; // 更新成功，退出重试
         }
-        throw new RuntimeException("更新帖子评论数失败，可能存在并发冲突，请稍后重试");
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "更新帖子评论数失败，可能存在并发冲突，请稍后重试");
     }
 
     // 使用乐观锁更新父评论的回复数
     private void updateCommentRepliesCount(Long commentId, int delta) {
         for (int retry = 0; retry < 3; retry++) {
             Comment comment = commentRepository.findById(commentId)
-                    .orElseThrow(() -> new BusinessException("父评论不存在"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "父评论不存在"));
 
             int updatedRows = commentRepository.updateRepliesCountWithVersion(commentId, comment.getVersion(), delta);
             if (updatedRows > 0) return; // 更新成功，退出重试
         }
-        throw new RuntimeException("更新评论回复数失败，可能存在并发冲突，请稍后重试");
+        throw new ResponseStatusException(HttpStatus.CONFLICT, "更新父评论回复数失败，可能存在并发冲突，请稍后重试");
     }
 
     // 然后修改评论转换方法

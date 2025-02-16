@@ -12,12 +12,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
-import org.example.skymatesbackend.exception.BusinessException;
 import org.example.skymatesbackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +50,7 @@ public class PostServiceImpl implements PostService {
     public PostDTO createPost(Long userId, PostDTO.CreateRequest request) {
         // 验证用户是否存在
         userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("用户不存在"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "用户不存在"));
 
         // 创建帖子实体
         Post post = new Post();
@@ -70,10 +71,10 @@ public class PostServiceImpl implements PostService {
     @Transactional(readOnly = true)
     public PostDTO getPostById(Long postId, Long currentUserId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException("帖子不存在"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在"));
 
         if (post.getStatus() != 1) {
-            throw new BusinessException("帖子已删除");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在或已删除");
         }
 
         boolean isLiked = currentUserId != null &&
@@ -85,14 +86,14 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostDTO updatePost(Long postId, Long userId, PostDTO.UpdateRequest request) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException("帖子不存在"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在"));
 
         if (!post.getUserId().equals(userId)) {
-            throw new BusinessException("没有权限修改此帖子");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "无权修改他人帖子");
         }
 
         if (post.getStatus() != 1) {
-            throw new BusinessException("帖子已删除");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在或已删除");
         }
 
         if (request.getTitle() != null) {
@@ -112,7 +113,7 @@ public class PostServiceImpl implements PostService {
     public void deletePost(Long postId, Long userId) {
         int affected = postRepository.softDeletePost(postId, userId);
         if (affected == 0) {
-            throw new BusinessException("删除失败，帖子不存在或没有权限");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在或无权删除帖子");
         }
     }
 
