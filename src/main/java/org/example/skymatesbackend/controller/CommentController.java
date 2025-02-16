@@ -1,18 +1,18 @@
 package org.example.skymatesbackend.controller;
 
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.example.skymatesbackend.dto.CommentDTO;
 import org.example.skymatesbackend.dto.PageDTO;
+import org.example.skymatesbackend.security.CustomUserDetails;
 import org.example.skymatesbackend.service.CommentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -29,16 +29,13 @@ public class CommentController {
      */
     @PostMapping
     public ResponseEntity<CommentDTO> createComment(
-            @PathVariable Long postId,
-            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable("postId") Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody @Valid CommentDTO.CreateRequest request) {
 
-        // 获取当前用户ID
-        Long userId = Long.parseLong(userDetails.getUsername());
-
-        // 创建评论
-        CommentDTO comment = commentService.createComment(postId, userId, request);
-        return ResponseEntity.ok(comment);
+        CommentDTO comment = commentService.createComment(postId, userDetails.getId(), request);
+        URI location = URI.create(String.format("/api/posts/%d/comments/%d", postId, comment.getId()));
+        return ResponseEntity.created(location).body(comment);
     }
 
     /**
@@ -50,17 +47,12 @@ public class CommentController {
      */
     @GetMapping
     public ResponseEntity<PageDTO<CommentDTO>> getPostComments(
-            @PathVariable Long postId,
+            @PathVariable("postId") Long postId,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-            @AuthenticationPrincipal() UserDetails userDetails) {
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        // 获取当前用户ID（如果已登录）
-        Long currentUserId = userDetails != null ?
-                Long.parseLong(userDetails.getUsername()) : null;
-
-        // 获取评论列表
-        PageDTO<CommentDTO> comments = commentService.getPostComments(postId, page, size, currentUserId);
+        PageDTO<CommentDTO> comments = commentService.getPostComments(postId, page, size, userDetails.getId());
         return ResponseEntity.ok(comments);
     }
 
@@ -72,16 +64,11 @@ public class CommentController {
      */
     @GetMapping("/{commentId}/replies")
     public ResponseEntity<List<CommentDTO>> getCommentReplies(
-            @PathVariable Long postId,
-            @PathVariable Long commentId,
-            @AuthenticationPrincipal(errorOnInvalidType = false) UserDetails userDetails) {
+            @SuppressWarnings("unused") @PathVariable("postId") Long postId,
+            @PathVariable("commentId") Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        // 获取当前用户ID（如果已登录）
-        Long currentUserId = userDetails != null ?
-                Long.parseLong(userDetails.getUsername()) : null;
-
-        // 获取回复列表
-        List<CommentDTO> replies = commentService.getCommentReplies(commentId, currentUserId);
+        List<CommentDTO> replies = commentService.getCommentReplies(commentId, userDetails.getId());
         return ResponseEntity.ok(replies);
     }
 
@@ -93,15 +80,11 @@ public class CommentController {
      */
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(
-            @PathVariable Long postId,
-            @PathVariable Long commentId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @SuppressWarnings("unused") @PathVariable("postId") Long postId,
+            @PathVariable("commentId") Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        // 获取当前用户ID
-        Long userId = Long.parseLong(userDetails.getUsername());
-
-        // 删除评论
-        commentService.deleteComment(commentId, userId);
+        commentService.deleteComment(commentId, userDetails.getId());
         return ResponseEntity.noContent().build();
     }
 }

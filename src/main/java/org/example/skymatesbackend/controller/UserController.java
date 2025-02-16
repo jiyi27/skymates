@@ -27,13 +27,11 @@ public class UserController {
     }
 
     /**
-     * 获取用户信息
-     * @param userId 用户ID
-     * @return 用户信息
      * @PathVariable("userId") 必须加上("userId")，否则会报错
      * java.lang.IllegalArgumentException: Name for argument of type [java.lang.Long] not specified,
      * and parameter name information not available via reflection.
      * Ensure that the compiler uses the '-parameters' flag.
+     * <a href="https://stackoverflow.com/a/25797744/16317008">...</a>
      */
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> getUser(@PathVariable("userId") Long userId) {
@@ -41,10 +39,6 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    /**
-     * 获取当前登录用户信息
-     * @return 用户信息
-     */
     @GetMapping("/me")
     public ResponseEntity<UserDTO> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
         Long userId = Long.parseLong(userDetails.getUsername());
@@ -52,22 +46,12 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    /**
-     * 检查用户名是否已存在
-     * @param username 用户名
-     * @return 存在状态
-     */
     @GetMapping("/check-username")
     public ResponseEntity<Boolean> checkUsername(@RequestParam String username) {
         boolean exists = userService.isUsernameExists(username);
         return ResponseEntity.ok(exists);
     }
 
-    /**
-     * 检查邮箱是否已存在
-     * @param email 邮箱
-     * @return 存在状态
-     */
     @GetMapping("/check-email")
     public ResponseEntity<Boolean> checkEmail(@RequestParam String email) {
         boolean exists = userService.isEmailExists(email);

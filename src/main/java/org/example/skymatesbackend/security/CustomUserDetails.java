@@ -1,35 +1,48 @@
 package org.example.skymatesbackend.security;
 
-import org.example.skymatesbackend.model.User;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
-import java.util.Collections;
 
+@Getter
 public class CustomUserDetails implements UserDetails {
+    private final Long id;
+    private final String username;
+    private final String password;
+    private final Collection<? extends GrantedAuthority> authorities;
 
-    private final User user;
-
-    public CustomUserDetails(User user) {
-        this.user = user;
+    public CustomUserDetails(Long id, String username, String password, Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.authorities = authorities;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // 如果有角色/权限，需要在这里转换成 Spring Security 的 GrantedAuthority
-        // 示例： return AuthorityUtils.createAuthorityList(user.getRoles().toArray(new String[0]));
-        return Collections.emptyList();
+        return authorities;
     }
 
     @Override
-    public String getPassword() {
-        // 返回数据库里存的加密后密码
-        return user.getPasswordHash();
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
     @Override
-    public String getUsername() {
-        return user.getUsername();
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
+
 

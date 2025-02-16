@@ -1,5 +1,6 @@
 package org.example.skymatesbackend.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,18 +16,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.util.Collections;
 
-/**
- * 自定义 JWT 认证过滤器
- */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private final JwtTokenService jwtUtils;
+    private final JwtTokenService jwtTokenService;
 
     @Autowired
     public JwtAuthFilter(JwtTokenService jwtUtils) {
-        this.jwtUtils = jwtUtils;
+        this.jwtTokenService = jwtUtils;
     }
 
     @Override
@@ -41,17 +40,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String jwt = parseJwt(request);
 
             // 验证 token 是否有效
-            if (jwt != null && jwtUtils.validateToken(jwt)) {
-                // 从 token 获取用户名
-                String username = jwtUtils.getUsernameFromToken(jwt);
+            if (jwt != null && jwtTokenService.validateToken(jwt)) {
+                Claims claims = jwtTokenService.getClaimsFromToken(jwt);
+                String username = claims.getSubject();
+                Long userId = claims.get("userId", Long.class);
 
-                // 这里可以进一步查询数据库，或用一个 UserDetailsService
-                // 简化起见，直接创建一个 UserDetails，设置已认证
-                UserDetails userDetails = org.springframework.security.core.userdetails.User
-                        .withUsername(username)
-                        .password("") // 这里只是示例
-                        .authorities("USER") // 或者根据实际角色设置
-                        .build();
+                // 返回我们自己的 CustomUserDetails, 它实现了 UserDetails 接口,
+                // 方便 Controller 中的 @AuthenticationPrincipal 注解获取用户信息
+                UserDetails userDetails = new CustomUserDetails(
+                        userId,
+                        username,
+                        "",
+                        Collections.emptyList()
+                );
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(

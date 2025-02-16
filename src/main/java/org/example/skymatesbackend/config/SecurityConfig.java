@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.skymatesbackend.model.User;
 import org.example.skymatesbackend.repository.UserRepository;
+import org.example.skymatesbackend.security.CustomUserDetails;
 import org.example.skymatesbackend.security.JwtAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,10 +39,12 @@ public class SecurityConfig {
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException("用户名不存在: " + username));
 
-            log.info("用户信息: {}", user);
-
-            // 把自己的 User 转换成 Spring Security 提供的 UserDetails 对象
-            return new org.springframework.security.core.userdetails.User(
+            // 这里返回我们自己的 CustomUserDetails, 它实现了 UserDetails 接口,
+            // 与 JwtAuthFilter 中我们创建的 CustomUserDetails 不同, 那里只需要携带用户名和用户ID,
+            // 目的是为了 Controller 中的 @AuthenticationPrincipal 注解获取用户信息
+            // 此时这里 CustomUserDetails 需要携带 完整的账号密码, 因为返回这个对象是为了给 DaoAuthenticationProvider 验证密码
+            return new CustomUserDetails(
+                    user.getId(),
                     user.getUsername(),
                     user.getPasswordHash(),
                     Collections.emptyList()

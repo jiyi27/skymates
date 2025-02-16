@@ -1,13 +1,11 @@
 package org.example.skymatesbackend.controller;
 
-
 import lombok.RequiredArgsConstructor;
+import org.example.skymatesbackend.security.CustomUserDetails;
 import org.example.skymatesbackend.service.LikeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -23,10 +21,10 @@ public class LikeController {
      */
     @PostMapping("/posts/{postId}/like")
     public ResponseEntity<Void> likePost(
-            @PathVariable Long postId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
-        likeService.likePost(postId, userId);
+            @PathVariable("postId") Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        likeService.likePost(postId, userDetails.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -37,10 +35,10 @@ public class LikeController {
      */
     @DeleteMapping("/posts/{postId}/like")
     public ResponseEntity<Void> unlikePost(
-            @PathVariable Long postId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
-        likeService.unlikePost(postId, userId);
+            @PathVariable("postId") Long postId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        likeService.unlikePost(postId, userDetails.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -51,10 +49,9 @@ public class LikeController {
      */
     @PostMapping("/comments/{commentId}/like")
     public ResponseEntity<Void> likeComment(
-            @PathVariable Long commentId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
-        likeService.likeComment(commentId, userId);
+            @PathVariable("commentId") Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        likeService.likeComment(commentId, userDetails.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -65,10 +62,9 @@ public class LikeController {
      */
     @DeleteMapping("/comments/{commentId}/like")
     public ResponseEntity<Void> unlikeComment(
-            @PathVariable Long commentId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
-        likeService.unlikeComment(commentId, userId);
+            @PathVariable("commentId") Long commentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        likeService.unlikeComment(commentId, userDetails.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -78,9 +74,8 @@ public class LikeController {
      */
     @GetMapping("/users/me/liked-posts")
     public ResponseEntity<List<Long>> getUserLikedPostIds(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
-        List<Long> postIds = likeService.getUserLikedPostIds(userId);
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<Long> postIds = likeService.getUserLikedPostIds(userDetails.getId());
         return ResponseEntity.ok(postIds);
     }
 
@@ -90,9 +85,8 @@ public class LikeController {
      */
     @GetMapping("/users/me/liked-comments")
     public ResponseEntity<List<Long>> getUserLikedCommentIds(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
-        List<Long> commentIds = likeService.getUserLikedCommentIds(userId);
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<Long> commentIds = likeService.getUserLikedCommentIds(userDetails.getId());
         return ResponseEntity.ok(commentIds);
     }
 }
