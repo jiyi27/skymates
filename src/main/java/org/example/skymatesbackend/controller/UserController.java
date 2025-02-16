@@ -47,13 +47,13 @@ public class UserController {
     }
 
     @GetMapping("/check-username")
-    public ResponseEntity<Boolean> checkUsername(@RequestParam String username) {
+    public ResponseEntity<Boolean> checkUsername(@RequestParam(name="username") String username) {
         boolean exists = userService.isUsernameExists(username);
         return ResponseEntity.ok(exists);
     }
 
     @GetMapping("/check-email")
-    public ResponseEntity<Boolean> checkEmail(@RequestParam String email) {
+    public ResponseEntity<Boolean> checkEmail(@RequestParam(name="email") String email) {
         boolean exists = userService.isEmailExists(email);
         return ResponseEntity.ok(exists);
     }

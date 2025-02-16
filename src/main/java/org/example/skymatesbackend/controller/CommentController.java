@@ -48,8 +48,8 @@ public class CommentController {
     @GetMapping
     public ResponseEntity<PageDTO<CommentDTO>> getPostComments(
             @PathVariable("postId") Long postId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(100) int size,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         PageDTO<CommentDTO> comments = commentService.getPostComments(postId, page, size, userDetails.getId());

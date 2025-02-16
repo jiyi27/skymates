@@ -32,8 +32,8 @@ public class PostController {
     @GetMapping
     public ResponseEntity<PageDTO<PostDTO>> getPosts(
             @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @RequestParam(name = "size", defaultValue = "10") @Min(1) @Max(100) int size,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         PageDTO<PostDTO> posts = postService.getPosts(keyword, page, size, userDetails.getId());
         return ResponseEntity.ok(posts);
@@ -76,8 +76,8 @@ public class PostController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<PageDTO<PostDTO>> getUserPosts(
             @PathVariable("userId") Long userId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size) {
+            @RequestParam(name = "page",defaultValue = "0") @Min(0) int page,
+            @RequestParam(name="size", defaultValue = "10") @Min(1) @Max(100) int size) {
 
         PageDTO<PostDTO> posts = postService.getUserPosts(userId, page, size);
         return ResponseEntity.ok(posts);
