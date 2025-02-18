@@ -22,16 +22,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     // 查找用户的所有评论
     Page<Comment> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
-    // 乐观锁更新评论点赞数
-    // 这里的 int 返回值表示受影响的行数，如果返回值为0，说明更新失败
     @Modifying
-    @Query("UPDATE Comment c " +
-            "SET c.likesCount = c.likesCount + :delta, " +
-            "    c.version = c.version + 1 " +
-            "WHERE c.id = :commentId AND c.version = :version")
+    @Query("UPDATE Comment c SET c.likesCount = c.likesCount + :delta WHERE c.id = :commentId")
     int updateLikesCountWithVersion(
             @Param("commentId") Long commentId,
-            @Param("version") long version,
             @Param("delta") int delta);
 
     // 乐观锁更新评论回复数
