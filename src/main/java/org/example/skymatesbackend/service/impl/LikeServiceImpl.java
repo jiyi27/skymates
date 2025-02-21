@@ -57,23 +57,27 @@ public class LikeServiceImpl implements LikeService {
     @Override
     @Transactional
     public void unlikePost(Long postId, Long userId) {
-        // 直接删除，返回删除的记录数
-        int deletedCount = postLikeRepository.deleteByPostIdAndUserId(postId, userId);
-        if (deletedCount == 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "未点赞过该帖子");
+        try {
+            // 直接删除，返回删除的记录数
+            int deletedCount = postLikeRepository.deleteByPostIdAndUserId(postId, userId);
+            if (deletedCount == 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "未点赞过该帖子");
+            }
+            postRepository.updateLikesCount(postId, -1);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "取消点赞失败");
         }
-        postRepository.updateLikesCount(postId, -1);
     }
 
     @Override
     @Transactional
     public void likeComment(Long commentId, Long userId) {
         try {
-            // 直接插入, 数据库唯一约束防止重复点赞, 外键约束防止帖子不存在, 否则抛出 DataIntegrityViolationException
             CommentLike commentLike = new CommentLike();
             commentLike.setCommentId(commentId);
             commentLike.setUserId(userId);
             commentLike.setCreatedAt(LocalDateTime.now());
+            // 直接插入, 数据库唯一约束防止重复点赞, 外键约束防止帖子不存在, 否则抛出 DataIntegrityViolationException
             commentLikeRepository.save(commentLike);
 
             commentRepository.updateLikesCount(commentId, 1);
@@ -86,12 +90,16 @@ public class LikeServiceImpl implements LikeService {
     @Override
     @Transactional
     public void unlikeComment(Long commentId, Long userId) {
-        // 直接删除，返回删除的记录数
-        int deletedCount = commentLikeRepository.deleteByCommentIdAndUserId(commentId, userId);
-        if (deletedCount == 0) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "未点赞过该评论");
+        try {
+            // 直接删除，返回删除的记录数
+            int deletedCount = commentLikeRepository.deleteByCommentIdAndUserId(commentId, userId);
+            if (deletedCount == 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "未点赞过该评论");
+            }
+            commentRepository.updateLikesCount(commentId, -1);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "取消点赞失败");
         }
-        commentRepository.updateLikesCount(commentId, -1);
     }
 
     @Override
