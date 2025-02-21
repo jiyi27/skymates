@@ -22,20 +22,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Post> searchPosts(String keyword, Pageable pageable);
 
+    // MySQL 默认会给 UPDATE, Insert, Delete 操作会加上 x锁,
+    // 自动便可以防止出现两个事务同时更新同一行数据, 导致数据累加错误情况, 所以没必要使用悲观锁或乐观锁
     @Modifying
     @Query("UPDATE Post p SET p.likesCount = p.likesCount + :delta WHERE p.id = :postId")
-    int updateLikesCount(@Param("postId") Long postId, @Param("delta") int delta);
+    void updateLikesCount(@Param("postId") Long postId, @Param("delta") int delta);
 
-    // 乐观锁更新帖子评论数
-    // 这里的 int 返回值表示受影响的行数，如果返回值为0，说明更新失败
     @Modifying
-    @Query("UPDATE Post p " +
-            "SET p.commentsCount = p.commentsCount + :delta, " +
-            "    p.version = p.version + 1 " +
-            "WHERE p.id = :postId AND p.version = :version")
-    int updateCommentsCountWithVersion(
+    @Query("UPDATE Post p SET p.commentsCount = p.commentsCount + :delta WHERE p.id = :postId")
+    void updateCommentsCount(
             @Param("postId") Long postId,
-            @Param("version") long version,
             @Param("delta") int delta);
 
     // 软删除帖子

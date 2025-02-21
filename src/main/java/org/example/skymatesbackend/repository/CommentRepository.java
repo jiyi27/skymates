@@ -22,22 +22,19 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     // 查找用户的所有评论
     Page<Comment> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
+    // MySQL 默认会给 UPDATE, Insert, Delete 操作会加上 x锁,
+    // 自动便可以防止出现两个事务同时更新同一行数据, 导致数据累加错误情况, 所以没必要使用悲观锁或乐观锁
     @Modifying
     @Query("UPDATE Comment c SET c.likesCount = c.likesCount + :delta WHERE c.id = :commentId")
-    int updateLikesCountWithVersion(
+    void updateLikesCount(
             @Param("commentId") Long commentId,
             @Param("delta") int delta);
 
-    // 乐观锁更新评论回复数
-    // 这里的 int 返回值表示受影响的行数，如果返回值为0，说明更新失败
+    // 更新评论回复数
     @Modifying
-    @Query("UPDATE Comment c " +
-            "SET c.repliesCount = c.repliesCount + :delta, " +
-            "    c.version = c.version + 1 " +
-            "WHERE c.id = :commentId AND c.version = :version")
-    int updateRepliesCountWithVersion(
+    @Query("UPDATE Comment c SET c.repliesCount = c.repliesCount + :delta WHERE c.id = :commentId")
+    int updateRepliesCount(
             @Param("commentId") Long commentId,
-            @Param("version") long version,
             @Param("delta") int delta);
 
     // 软删除评论, 只删除 status = 1 的评论

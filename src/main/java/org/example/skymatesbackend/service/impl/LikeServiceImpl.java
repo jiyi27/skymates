@@ -40,15 +40,13 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void likePost(Long postId, Long userId) {
         try {
-            // 直接插入, 数据库唯一约束防止重复点赞
+            // 直接插入, 数据库唯一约束防止重复点赞, 外键约束防止帖子不存在, 否则抛出 DataIntegrityViolationException
             PostLike postLike = new PostLike();
             postLike.setPostId(postId);
             postLike.setUserId(userId);
             postLike.setCreatedAt(LocalDateTime.now());
             postLikeRepository.save(postLike);
 
-            // 更新帖子的点赞数, MySQL 默认会给 UPDATE 操作会加上 x锁,
-            // 自动便可以防止出现两个事务同时更新同一行数据, 导致数据累加错误情况
             postRepository.updateLikesCount(postId, 1);
         } catch (DataIntegrityViolationException e) {
             // 唯一性约束冲突和外键约束冲突(postLike插入前会检查post.postId是否存在), 都会抛出 DataIntegrityViolationException
@@ -71,14 +69,14 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void likeComment(Long commentId, Long userId) {
         try {
-            // 直接插入, 数据库唯一约束防止重复点赞
+            // 直接插入, 数据库唯一约束防止重复点赞, 外键约束防止帖子不存在, 否则抛出 DataIntegrityViolationException
             CommentLike commentLike = new CommentLike();
             commentLike.setCommentId(commentId);
             commentLike.setUserId(userId);
             commentLike.setCreatedAt(LocalDateTime.now());
             commentLikeRepository.save(commentLike);
 
-            commentRepository.updateLikesCountWithVersion(commentId, 1);
+            commentRepository.updateLikesCount(commentId, 1);
         } catch (DataIntegrityViolationException e) {
             // 唯一性约束冲突和外键约束冲突(commentLike插入前会检查comment.commentId是否存在), 都会抛出 DataIntegrityViolationException
             throw new ResponseStatusException(HttpStatus.CONFLICT, "点赞失败, 已经点赞过该评论或评论不存在");
@@ -93,7 +91,7 @@ public class LikeServiceImpl implements LikeService {
         if (deletedCount == 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "未点赞过该评论");
         }
-        commentRepository.updateLikesCountWithVersion(commentId, -1);
+        commentRepository.updateLikesCount(commentId, -1);
     }
 
     @Override

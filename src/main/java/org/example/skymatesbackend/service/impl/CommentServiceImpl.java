@@ -5,12 +5,12 @@ import org.example.skymatesbackend.converter.UserConverter;
 import org.example.skymatesbackend.dto.CommentDTO;
 import org.example.skymatesbackend.dto.PageDTO;
 import org.example.skymatesbackend.model.Comment;
-import org.example.skymatesbackend.model.Post;
 import org.example.skymatesbackend.repository.CommentLikeRepository;
 import org.example.skymatesbackend.repository.CommentRepository;
 import org.example.skymatesbackend.repository.PostRepository;
 import org.example.skymatesbackend.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -53,11 +53,10 @@ public class CommentServiceImpl implements CommentService {
         postRepository.findById(postId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在"));
 
-        Long parentId = request.getParentId();
-
-        if (parentId != null) {
+        Long commentParentId = request.getParentId();
+        if (commentParentId != null) {
             // 验证父评论是否存在
-            Comment parentComment = commentRepository.findById(parentId)
+            Comment parentComment = commentRepository.findById(commentParentId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "父评论不存在"));
 
             // 验证父评论是否属于当前帖子
@@ -71,20 +70,21 @@ public class CommentServiceImpl implements CommentService {
         comment.setPostId(postId);
         comment.setUserId(userId);
         comment.setContent(request.getContent());
-        comment.setParentId(parentId);
+        comment.setParentId(commentParentId);
         comment.setCreatedAt(LocalDateTime.now());
         comment.setUpdatedAt(LocalDateTime.now());
         comment.setStatus(1);
         comment.setLikesCount(0);
         comment.setRepliesCount(0);
 
-        comment = commentRepository.save(comment);
-
-        // 更新父评论和帖子评论数
-        if (parentId != null) {
-            updateCommentRepliesCount(parentId, 1);
+        try {
+            // 保存评论
+            comment = commentRepository.save(comment);
+            // 更新帖子评论数
+            postRepository.updateCommentsCount(postId, 1);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "评论失败, 请检查帖子是否存在");
         }
-        updatePostCommentsCount(postId, 1);
 
         return convertToDTO(comment, false);
     }
@@ -100,13 +100,12 @@ public class CommentServiceImpl implements CommentService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "评论不存在或无权删除评论");
         }
 
-        // 如果是回复评论，则减少父评论的回复数
-        if (comment.getParentId() != null) {
-            updateCommentRepliesCount(comment.getParentId(), -1);
+        try {
+            // 删除评论后减少帖子的评论数
+            postRepository.updateCommentsCount(comment.getPostId(), -1);
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "删除评论失败, 请检查帖子是否存在");
         }
-
-        // 任何删除的评论都需要减少帖子评论数
-        updatePostCommentsCount(comment.getPostId(), -1);
     }
 
     /**
@@ -149,30 +148,6 @@ public class CommentServiceImpl implements CommentService {
         return replies.stream()
                 .map(reply -> convertToDTO(reply, likedCommentIds.contains(reply.getId())))
                 .collect(Collectors.toList());
-    }
-
-    // 使用乐观锁更新帖子评论数
-    private void updatePostCommentsCount(Long postId, int delta) {
-        for (int retry = 0; retry < 3; retry++) {
-            Post post = postRepository.findById(postId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "帖子不存在"));
-
-            int updatedRows = postRepository.updateCommentsCountWithVersion(postId, post.getVersion(), delta);
-            if (updatedRows > 0) return; // 更新成功，退出重试
-        }
-        throw new ResponseStatusException(HttpStatus.CONFLICT, "更新帖子评论数失败，可能存在并发冲突，请稍后重试");
-    }
-
-    // 使用乐观锁更新父评论的回复数
-    private void updateCommentRepliesCount(Long commentId, int delta) {
-        for (int retry = 0; retry < 3; retry++) {
-            Comment comment = commentRepository.findById(commentId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "父评论不存在"));
-
-            int updatedRows = commentRepository.updateRepliesCountWithVersion(commentId, comment.getVersion(), delta);
-            if (updatedRows > 0) return; // 更新成功，退出重试
-        }
-        throw new ResponseStatusException(HttpStatus.CONFLICT, "更新父评论回复数失败，可能存在并发冲突，请稍后重试");
     }
 
     // 然后修改评论转换方法
