@@ -49,18 +49,16 @@ public class LikeServiceImpl implements LikeService {
     public void likePost(Long postId, Long userId) {
         String likesUsersKey = "post:" + postId + ":likes_users";
         String likesCountKey = "post:" + postId + ":likes_count";
-        // 1. 检查是否已点赞
-        if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(likesUsersKey, userId))) {
-            return; // 已点赞，直接返回
+
+        // sAddRet 要么是 1（成功加入，不在集合中），要么是 0（已存在，没加入）
+        Long sAddRet = redisTemplate.opsForSet().add(likesUsersKey, userId);
+        if (sAddRet != null && sAddRet > 0) {
+            // 只有在成功新加了用户的时候才执行加1
+            redisTemplate.opsForValue().increment(likesCountKey, 1);
+            // 同时再发Kafka事件
+            String event = "like," + postId + "," + userId;
+            kafkaTemplate.send("like-topic", event);
         }
-
-        // 2. Redis 操作：添加用户ID到点赞集合 & 计数+1
-        redisTemplate.opsForSet().add(likesUsersKey, userId);
-        redisTemplate.opsForValue().increment(likesCountKey, 1);
-
-        // 3. 发送 Kafka 事件 (type=like)
-        String event = "like," + postId + "," + userId;
-        kafkaTemplate.send("like-topic", event);
     }
 
     @Override
@@ -68,21 +66,18 @@ public class LikeServiceImpl implements LikeService {
         String likesUsersKey = "post:" + postId + ":likes_users";
         String likesCountKey = "post:" + postId + ":likes_count";
 
-        // 1. 检查用户是否已点赞
-        if (!Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(likesUsersKey, userId))) {
-            return; // 未点赞，直接返回
+        // 直接尝试从集合中移除用户，SREM返回值为1表示成功移除，0表示用户本来就不存在
+        Long removeRet = redisTemplate.opsForSet().remove(likesUsersKey, userId);
+        if (removeRet != null && removeRet > 0) {
+            // 只有移除成功才进行计数的递减，确保计数与集合中的用户数一致
+            Long currentCount = redisTemplate.opsForValue().get(likesCountKey);
+            if (currentCount != null && currentCount > 0) {
+                redisTemplate.opsForValue().decrement(likesCountKey);
+            }
+            // 发送 Kafka 事件
+            String event = "unlike," + postId + "," + userId;
+            kafkaTemplate.send("like-topic", event);
         }
-
-        // 2. 从 Redis 中移除点赞 & 减少计数
-        redisTemplate.opsForSet().remove(likesUsersKey, userId);
-        Long currentCount = redisTemplate.opsForValue().get(likesCountKey);
-        if (currentCount != null && currentCount > 0) {
-            redisTemplate.opsForValue().decrement(likesCountKey);
-        }
-
-        // 3. 发送 Kafka 事件
-        String event = "unlike," + postId + "," + userId;
-        kafkaTemplate.send("like-topic", event);
     }
 
     // Kafka 消费者处理点赞和取消点赞事件

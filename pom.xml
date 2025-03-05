@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org.example</groupId>
-    <artifactId>skymates-backend</artifactId>
+    <artifactId>skymates-post-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>skymates-backend</name>
     <description>skymates-backend</description>
