@@ -1,8 +1,8 @@
 spring:
   application:
-    name: skymates-content-service
+    name: skymates-backend
   datasource:
-    url: jdbc:mysql://localhost:3306/skymates_content?serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/skymates?serverTimezone=UTC
     username: root
     password: 778899
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -10,8 +10,14 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
+
+jwt:
+  secret: MY_JWT_SECRET_KEY_EXAMPLE_123456
+  expiration: 86400000
+
 server:
   port: 8082
+
 eureka:
   client:
     service-url:
