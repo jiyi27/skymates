@@ -1,0 +1,13 @@
+server:
+  port: 8761
+
+spring:
+  application:
+    name: skymates-eureka-server
+
+eureka:
+  client:
+    register-with-eureka: false  # 自己就是服务注册中心，无需注册到其他中心
+    fetch-registry: false
+  server:
+    enable-self-preservation: false  # 测试环境可先关闭自我保护

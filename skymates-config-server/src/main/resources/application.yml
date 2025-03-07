@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: skymates-config-server
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/jiyi27/skymates.git
+          search-paths: configs
+          default-label: master
+server:
+  port: 8888  # Config Server 的默认端口
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
