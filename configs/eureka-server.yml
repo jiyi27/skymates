@@ -7,5 +7,7 @@ eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
+    # 这个 URL 不是直接在浏览器访问的页面, 直接访问地址是 http://localhost:8761
+    # 它是一个 RESTful API 端点, 返回的数据通常是 JSON 或 XML 格式, 供其它微服务客户端解析服务信息
     service-url:
       defaultZone: http://localhost:8761/eureka/

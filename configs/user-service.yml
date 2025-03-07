@@ -1,5 +1,8 @@
 spring:
   application:
+    # 定义当前应用程序的名, 会被发送到 Eureka 服务器, 作为服务注册时的服务名
+    # 这样 Eureka 就知道了有一个 skymates-user-service 服务, ip地址为 xxx, 服务端口为server.port
+    # Gateway 就可以进行负载均衡路由转发: uri: lb://skymates-user-service
     name: skymates-user-service
   datasource:
     url: jdbc:mysql://localhost:3306/skymates?serverTimezone=UTC
