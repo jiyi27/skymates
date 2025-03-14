@@ -10,8 +10,3 @@ spring:
           default-label: master
 server:
   port: 8888  # Config Server 的默认端口
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka

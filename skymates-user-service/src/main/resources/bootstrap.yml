@@ -2,6 +2,6 @@ spring:
   cloud:
     config:
       uri: http://localhost:8888
-      name: content-service     # 配置文件名，例如 content-service.yml
+      name: user-service
       profile: default
       label: master

@@ -1,0 +1,9 @@
+spring:
+  cloud:
+    config:
+      uri: http://localhost:8888
+      # 指定 name: gateway 时, 当在 Config Server 加载配置文件的时候
+      # Config Server 尝试加载类似于 gateway.yml、gateway.properties 或其他符合命名规则的配置文件
+      name: gateway
+      profile: default
+      label: master

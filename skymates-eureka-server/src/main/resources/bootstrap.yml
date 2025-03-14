@@ -1,0 +1,9 @@
+spring:
+  cloud:
+    config:
+      uri: http://localhost:8888
+      # 当你配置了 name: eureka-server 时，Config Server 会尝试加载类似于 eureka-server.yml、
+      # eureka-server.properties 或其他符合命名规则的配置文件
+      name: eureka-server
+      profile: default
+      label: master
